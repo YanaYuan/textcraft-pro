@@ -1,0 +1,22 @@
+{
+  "name": "textcraft-pro",
+  "version": "2.0.0",
+  "description": "AI-powered text optimization platform with intelligent suggestions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'Static files ready for deployment'"
+  },
+  "keywords": ["ai", "text", "optimization", "azure", "openai", "ppt", "suggestions"],
+  "author": "TextCraft Pro",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

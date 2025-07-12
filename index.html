@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文案优化工具 - AI智能文案助手</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <h1>TextCraft</h1>
+                <span class="version">Pro</span>
+            </div>
+            <div class="subtitle">AI-powered text optimization platform</div>
+        </header>
+
+        <main class="main">
+            <div class="left-panel">
+                <div class="input-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            输入文案
+                            <button class="demo-btn" id="demoBtn">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 4H37L26 18H41L17 44L22 25H8L19 4Z" fill="#333" stroke="#333" stroke-width="4" stroke-linejoin="round"/>
+                                </svg>
+                                试试这些案例
+                            </button>
+                        </h2>
+                    </div>
+                    <div class="input-container">
+                        <textarea 
+                            id="inputText" 
+                            placeholder="请输入您要优化的文案内容..."
+                            rows="6"
+                        ></textarea>
+                        <div class="input-footer">
+                            <span class="char-count">0 / 2000</span>
+                            <button class="clear-btn" id="clearBtn">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="functions-section">
+                    <h2 class="section-title">选择功能</h2>
+                    <div class="functions-grid">                        <button class="function-btn" data-function="optimize">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="currentColor">
+                                    <path d="M23.9986 5L17.8856 17.4776L4 19.4911L14.0589 29.3251L11.6544 43L23.9986 36.4192L36.3454 43L33.9586 29.3251L44 19.4911L30.1913 17.4776L23.9986 5Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">优化表达</div>
+                        </button>
+
+                        <button class="function-btn" data-function="expand">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                                    <path d="M22 42H6V26" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M26 6H42V22" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">扩写</div>
+                        </button>
+
+                        <button class="function-btn" data-function="summarize">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                                    <path d="M44 20H28V4" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 28H20V44" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">缩写</div>
+                        </button>
+
+                        <button class="function-btn" data-function="simplify">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="20" fill="currentColor" stroke="currentColor" stroke-width="4"/>
+                                    <path d="M32 16H16" stroke="#FFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M24 34V16" stroke="#FFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">朴实表达</div>
+                        </button>
+
+                        <button class="function-btn" data-function="emotional">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                                    <path d="M15 8C8.92487 8 4 12.9249 4 19C4 30 17 40 24 42.3262C31 40 44 30 44 19C44 12.9249 39.0751 8 33 8C29.2797 8 25.9907 9.8469 24 12.6738C22.0093 9.8469 18.7203 8 15 8Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">感染力表达</div>
+                        </button>
+
+                        <button class="function-btn" data-function="continue">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="currentColor">
+                                    <path d="M15 36C8.92487 36 4 31.0751 4 25C4 18.9249 8.92487 14 15 14C17.3584 14 19.5164 14.7536 21.2618 16.0267M36 14V34" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                                    <path d="M29 27L36 34L43 27" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">续写</div>
+                        </button>
+
+                        <button class="function-btn" data-function="check">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="currentColor">
+                                    <circle cx="24" cy="11" r="7" stroke="currentColor" stroke-width="4" fill="none"/>
+                                    <path d="M6 40.8V42H42V40.8C42 33.6 35.6 30 24 30C12.4 30 6 33.6 6 40.8Z" stroke="currentColor" stroke-width="4" fill="none"/>
+                                    <path d="M20 16L22 18L28 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">检查错误</div>
+                        </button>
+
+                        <button class="function-btn" data-function="custom">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="currentColor">
+                                    <circle cx="24" cy="24" r="3"/>
+                                    <path d="M24 1V7M24 41V47M46.5 24H40.5M7.5 24H1.5M39.4 8.6L35.4 12.6M12.6 35.4L8.6 39.4M39.4 39.4L35.4 35.4M12.6 12.6L8.6 8.6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">输入修改建议</div>
+                            <span class="new-badge">new</span>
+                        </button>
+
+                        <button class="function-btn" data-function="analysis" id="analysisBtn">
+                            <div class="function-icon">
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20.1005 8.1005L24.3431 12.3431M30 4V10V4ZM39.8995 8.1005L35.6569 12.3431L39.8995 8.1005ZM44 18H38H44ZM39.8995 27.8995L35.6569 23.6569L39.8995 27.8995ZM30 32V26V32ZM20.1005 27.8995L24.3431 23.6569L20.1005 27.8995ZM16 18H22H16Z" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M29.5856 18.4143L5.54395 42.4559" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="function-title">智能修改建议</div>
+                            <span class="new-badge">new</span>
+                        </button>
+                </div>
+            </div>
+            </div>
+
+            <div class="output-section" id="outputSection">
+                <div class="output-placeholder" id="outputPlaceholder">
+                    <div class="placeholder-icon">📄</div>
+                    <div class="placeholder-text">优化结果将在这里显示</div>
+                    <div class="placeholder-desc">请先输入文案内容，然后选择相应的优化功能</div>
+                </div>
+                
+                <div class="output-content" id="outputContent" style="display: none;">
+                    <div class="output-header">
+                        <h3 id="outputTitle">优化结果</h3>
+                        <div class="output-actions">
+                            <button class="action-btn" id="copyBtn">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <rect x="2" y="2" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                    <rect x="6" y="6" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                                复制
+                            </button>
+                            <button class="action-btn" id="useAsInputBtn">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                用作输入
+                            </button>
+                        </div>
+                    </div>
+                    <div class="output-container">
+                        <div id="outputText" class="output-text"></div>
+                        <div class="loading" id="loading" style="display: none;">
+                            <div class="loading-content">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-text">
+                                    <span id="loadingMessage">AI正在处理中...</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progressFill"></div>
+                                    </div>
+                                    <div class="progress-text">
+                                        <span id="progressPercent">0%</span>
+                                        <span id="progressStep">初始化中</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 自定义需求模态框 -->
+    <div class="modal" id="customModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>自定义修改需求</h3>
+                <button class="modal-close" id="modalClose">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea 
+                    id="customRequirement" 
+                    placeholder="请详细描述您希望如何修改这段文字，例如：改为正式语气、增加专业术语、调整为第一人称等..."
+                    rows="4"
+                ></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modalCancel">取消</button>
+                <button class="btn-primary" id="modalConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 智能建议模态框 -->
+    <div class="modal" id="suggestionModal">
+        <div class="modal-content suggestion-modal-content">
+            <div class="modal-header">
+                <h3>💡 智能修改建议</h3>
+                <button class="modal-close" id="suggestionModalClose">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="suggestion-loading" id="suggestionLoading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">AI正在分析文案，生成优化建议...</div>
+                </div>
+                <div class="suggestions-list" id="modalSuggestionsList">
+                    <!-- 建议项目将动态插入这里 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="suggestionModalCancel">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+    <script src="debug.js"></script>
+</body>
+</html>
