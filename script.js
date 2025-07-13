@@ -890,19 +890,29 @@ class TextOptimizer {
             const editBtnText = document.getElementById('editBtnText');
             if (editBtnText) editBtnText.textContent = '编辑';
             
-            // 显示所有操作按钮
+            // 显示所有操作按钮（使用CSS类确保立即生效）
             if (copyBtn) {
                 copyBtn.style.opacity = '1';
                 copyBtn.style.visibility = 'visible';
+                copyBtn.classList.add('force-visible');
             }
             if (useAsInputBtn) {
                 useAsInputBtn.style.opacity = '1';
                 useAsInputBtn.style.visibility = 'visible';
+                useAsInputBtn.classList.add('force-visible');
             }
             if (editBtn) {
                 editBtn.style.opacity = '1';
                 editBtn.style.visibility = 'visible';
+                editBtn.classList.add('force-visible');
             }
+            
+            // 小延迟后移除强制类，让正常过渡生效
+            setTimeout(() => {
+                if (copyBtn) copyBtn.classList.remove('force-visible');
+                if (useAsInputBtn) useAsInputBtn.classList.remove('force-visible');
+                if (editBtn) editBtn.classList.remove('force-visible');
+            }, 200);
             
             console.log('✅ Result displayed successfully');
         } else {
@@ -972,6 +982,8 @@ class TextOptimizer {
         const outputText = document.getElementById('outputText');
         const editBtn = document.getElementById('editBtn');
         const editBtnText = document.getElementById('editBtnText');
+        const copyBtn = document.getElementById('copyBtn');
+        const useAsInputBtn = document.getElementById('useAsInputBtn');
         const isEditable = outputText.getAttribute('contenteditable') === 'true';
         
         if (isEditable) {
@@ -986,6 +998,30 @@ class TextOptimizer {
             editBtnText.textContent = '完成';
             this.showToast('✏️ 现在可以编辑输出内容', 'info');
         }
+        
+        // 强制重新设置所有按钮的可见状态，确保悬停效果正常
+        if (copyBtn) {
+            copyBtn.style.opacity = '1';
+            copyBtn.style.visibility = 'visible';
+            copyBtn.classList.add('force-visible');
+        }
+        if (useAsInputBtn) {
+            useAsInputBtn.style.opacity = '1';
+            useAsInputBtn.style.visibility = 'visible';
+            useAsInputBtn.classList.add('force-visible');
+        }
+        if (editBtn) {
+            editBtn.style.opacity = '1';
+            editBtn.style.visibility = 'visible';
+            editBtn.classList.add('force-visible');
+        }
+        
+        // 移除强制类，让正常过渡生效
+        setTimeout(() => {
+            if (copyBtn) copyBtn.classList.remove('force-visible');
+            if (useAsInputBtn) useAsInputBtn.classList.remove('force-visible');
+            if (editBtn) editBtn.classList.remove('force-visible');
+        }, 200);
     }
 
     showToast(message, type = 'info') {

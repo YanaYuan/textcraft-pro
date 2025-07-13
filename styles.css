@@ -489,13 +489,19 @@ body {
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.2s ease, opacity 0.3s ease, visibility 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .action-btn:hover {
     background: #1d1d1f;
     color: white;
     border-color: #1d1d1f;
+}
+
+/* 强制显示按钮状态 */
+.action-btn.force-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .output-container {
