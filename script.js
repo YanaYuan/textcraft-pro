@@ -891,9 +891,18 @@ class TextOptimizer {
             if (editBtnText) editBtnText.textContent = '编辑';
             
             // 显示所有操作按钮
-            if (copyBtn) copyBtn.style.display = 'flex';
-            if (useAsInputBtn) useAsInputBtn.style.display = 'flex';
-            if (editBtn) editBtn.style.display = 'flex';
+            if (copyBtn) {
+                copyBtn.style.opacity = '1';
+                copyBtn.style.visibility = 'visible';
+            }
+            if (useAsInputBtn) {
+                useAsInputBtn.style.opacity = '1';
+                useAsInputBtn.style.visibility = 'visible';
+            }
+            if (editBtn) {
+                editBtn.style.opacity = '1';
+                editBtn.style.visibility = 'visible';
+            }
             
             console.log('✅ Result displayed successfully');
         } else {
