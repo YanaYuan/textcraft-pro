@@ -932,6 +932,34 @@ body {
     transform: translateY(1px);
 }
 
+/* 可编辑输出文本样式 */
+.output-text[contenteditable="true"] {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #1d1d1f;
+    border-radius: 8px;
+    padding: 16px;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.1);
+    transition: all 0.2s ease;
+}
+
+.output-text[contenteditable="true"]:focus {
+    box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.2);
+}
+
+.output-text[contenteditable="true"]::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #1d1d1f, #6e6e73);
+    border-radius: 10px;
+    z-index: -1;
+    opacity: 0.1;
+}
+
 /* 响应式设计 - 保持16:9比例 */
 @media (max-width: 1600px) {
     body {

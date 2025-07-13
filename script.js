@@ -63,6 +63,8 @@ class TextOptimizer {
         });
 
         // Output actions
+        const editBtn = document.getElementById('editBtn');
+        editBtn.addEventListener('click', () => this.toggleEdit());
         copyBtn.addEventListener('click', () => this.copyOutput());
         useAsInputBtn.addEventListener('click', () => this.useOutputAsInput());
 
@@ -505,6 +507,7 @@ class TextOptimizer {
     }
 
     updateCharCount() {
+        const inputText = document.getElementById('inputText');
         const charCount = document.querySelector('.char-count');
         const length = inputText.value.length;
         charCount.textContent = `${length} / 2000`;
@@ -865,16 +868,32 @@ class TextOptimizer {
 
         const outputTitle = document.getElementById('outputTitle');
         const outputText = document.getElementById('outputText');
+        const copyBtn = document.getElementById('copyBtn');
+        const useAsInputBtn = document.getElementById('useAsInputBtn');
+        const editBtn = document.getElementById('editBtn');
         
         console.log('🔍 Output elements found:', {
             outputTitle: !!outputTitle,
-            outputText: !!outputText
+            outputText: !!outputText,
+            copyBtn: !!copyBtn,
+            useAsInputBtn: !!useAsInputBtn,
+            editBtn: !!editBtn
         });
         
         if (outputTitle && outputText) {
             outputTitle.textContent = functionTitles[functionType] || '处理结果';
             outputText.textContent = result;
             outputText.style.color = '#1d1d1f'; // 确保文字颜色正确
+            
+            // 重置编辑状态
+            outputText.setAttribute('contenteditable', 'false');
+            const editBtnText = document.getElementById('editBtnText');
+            if (editBtnText) editBtnText.textContent = '编辑';
+            
+            // 显示所有操作按钮
+            if (copyBtn) copyBtn.style.display = 'flex';
+            if (useAsInputBtn) useAsInputBtn.style.display = 'flex';
+            if (editBtn) editBtn.style.display = 'flex';
             
             console.log('✅ Result displayed successfully');
         } else {
@@ -918,8 +937,11 @@ class TextOptimizer {
     }
 
     useOutputAsInput() {
-        const outputText = document.getElementById('outputText').textContent;
+        const outputTextElement = document.getElementById('outputText');
         const inputTextArea = document.getElementById('inputText');
+        
+        // 获取输出文本内容（可能已经被用户编辑过）
+        const outputText = outputTextElement.textContent || outputTextElement.innerText;
         
         inputTextArea.value = outputText;
         this.updateCharCount();
@@ -928,7 +950,33 @@ class TextOptimizer {
         // 聚焦到输入区域
         inputTextArea.focus();
         
-        this.showToast('已将结果设为新的输入文本');
+        // 如果文本被编辑过，提示用户
+        const isEdited = outputTextElement.getAttribute('contenteditable') === 'true';
+        if (isEdited) {
+            this.showToast('✅ 已将编辑后的内容设为新的输入文本');
+        } else {
+            this.showToast('已将结果设为新的输入文本');
+        }
+    }
+
+    toggleEdit() {
+        const outputText = document.getElementById('outputText');
+        const editBtn = document.getElementById('editBtn');
+        const editBtnText = document.getElementById('editBtnText');
+        const isEditable = outputText.getAttribute('contenteditable') === 'true';
+        
+        if (isEditable) {
+            // 切换到只读模式
+            outputText.setAttribute('contenteditable', 'false');
+            editBtnText.textContent = '编辑';
+            this.showToast('✅ 编辑完成，已保存更改', 'success');
+        } else {
+            // 切换到编辑模式
+            outputText.setAttribute('contenteditable', 'true');
+            outputText.focus();
+            editBtnText.textContent = '完成';
+            this.showToast('✏️ 现在可以编辑输出内容', 'info');
+        }
     }
 
     showToast(message, type = 'info') {

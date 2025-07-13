@@ -162,7 +162,14 @@
                     <div class="output-header">
                         <h3 id="outputTitle">优化结果</h3>
                         <div class="output-actions">
-                            <button class="action-btn" id="copyBtn">
+                            <button class="action-btn" id="editBtn" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M12.854 2.854a.5.5 0 0 0-.708-.708L3.5 10.793V12.5h1.707l8.647-8.646z" fill="currentColor"/>
+                                    <path d="M13.5 14.5H2.5a1 1 0 0 1-1-1V2.5a1 1 0 0 1 1-1H7v1H2.5a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V8h1v5.5a1 1 0 0 1-1 1z" fill="currentColor"/>
+                                </svg>
+                                <span id="editBtnText">编辑</span>
+                            </button>
+                            <button class="action-btn" id="copyBtn" style="display: none;">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                     <rect x="2" y="2" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
                                     <rect x="6" y="6" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
@@ -178,7 +185,7 @@
                         </div>
                     </div>
                     <div class="output-container">
-                        <div id="outputText" class="output-text"></div>
+                        <div id="outputText" class="output-text" contenteditable="false" spellcheck="false"></div>
                         <div class="loading" id="loading" style="display: none;">
                             <div class="loading-content">
                                 <div class="loading-spinner"></div>
