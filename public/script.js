@@ -902,10 +902,6 @@ class TextOptimizer {
             console.error('❌ Output elements not found!');
         }
     }
-        } else {
-            console.error('❌ Output elements not found!');
-        }
-    }
 
     displayError(message) {
         document.getElementById('outputTitle').textContent = '处理失败';
@@ -963,7 +959,6 @@ class TextOptimizer {
         } else {
             this.showToast('已将结果设为新的输入文本');
         }
-    }
     }
 
     toggleEdit() {
