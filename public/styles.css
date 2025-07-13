@@ -897,6 +897,41 @@ body {
     opacity: 1;
 }
 
+/* 语言选择网格 */
+.language-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.language-btn {
+    padding: 12px 16px;
+    border: 1px solid #e5e5e7;
+    border-radius: 8px;
+    background: white;
+    color: #1d1d1f;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.language-btn:hover {
+    background: #1d1d1f;
+    color: white;
+    border-color: #1d1d1f;
+}
+
+.language-btn:focus {
+    outline: 2px solid #1d1d1f;
+    outline-offset: 2px;
+}
+
+.language-btn:active {
+    transform: translateY(1px);
+}
+
 /* 响应式设计 - 保持16:9比例 */
 @media (max-width: 1600px) {
     body {
