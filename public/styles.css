@@ -913,7 +913,6 @@ body {
 /* Toast 提示 */
 .toast {
     position: fixed;
-    bottom: 20px;
     right: 20px;
     background: #1d1d1f;
     color: white;
