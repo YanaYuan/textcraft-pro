@@ -1067,6 +1067,52 @@ body {
     }
 }
 
+/* 语言选择样式 */
+.language-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.language-btn {
+    padding: 14px 12px;
+    border: 1px solid #e5e5e7;
+    border-radius: 8px;
+    background: white;
+    color: #1d1d1f;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1.3;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.language-btn:hover {
+    background: #1d1d1f;
+    color: white;
+    border-color: #1d1d1f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 29, 31, 0.15);
+}
+
+.language-btn:focus {
+    outline: 2px solid #1d1d1f;
+    outline-offset: 2px;
+}
+
+.language-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(29, 29, 31, 0.15);
+}
+
 /* 聚焦状态和可访问性 */
 .function-btn:focus,
 .action-btn:focus,

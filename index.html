@@ -86,7 +86,7 @@
                                     <path d="M24 34V16" stroke="#FFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </div>
-                            <div class="function-title">朴实表达</div>
+                            <div class="function-title">表达更朴实</div>
                         </button>
 
                         <button class="function-btn" data-function="emotional">
@@ -103,14 +103,16 @@
                             <div class="function-title">表达更具体</div>
                         </button>
 
-                        <button class="function-btn" data-function="continue">
+                        <button class="function-btn" data-function="translate">
                             <div class="function-icon">
-                                <svg width="16" height="16" viewBox="0 0 48 48" fill="currentColor">
-                                    <path d="M15 36C8.92487 36 4 31.0751 4 25C4 18.9249 8.92487 14 15 14C17.3584 14 19.5164 14.7536 21.2618 16.0267M36 14V34" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
-                                    <path d="M29 27L36 34L43 27" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                                    <rect x="6" y="6" width="36" height="36" rx="4" stroke="currentColor" stroke-width="4"/>
+                                    <path d="M16 20H32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M24 28V20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M20 32H28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                                 </svg>
                             </div>
-                            <div class="function-title">续写</div>
+                            <div class="function-title">翻译</div>
                         </button>
 
                         <button class="function-btn" data-function="check">
@@ -247,6 +249,35 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="suggestionModalCancel">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 语言选择模态框 -->
+    <div class="modal" id="languageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>选择翻译语言</h3>
+                <button class="modal-close" id="languageModalClose">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="language-grid">
+                    <button class="language-btn" data-language="英语">English 英语</button>
+                    <button class="language-btn" data-language="日语">日本語 日语</button>
+                    <button class="language-btn" data-language="韩语">한국어 韩语</button>
+                    <button class="language-btn" data-language="法语">Français 法语</button>
+                    <button class="language-btn" data-language="德语">Deutsch 德语</button>
+                    <button class="language-btn" data-language="西班牙语">Español 西班牙语</button>
+                    <button class="language-btn" data-language="俄语">Русский 俄语</button>
+                    <button class="language-btn" data-language="阿拉伯语">العربية 阿拉伯语</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="languageModalCancel">取消</button>
             </div>
         </div>
     </div>

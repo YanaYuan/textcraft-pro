@@ -79,6 +79,25 @@ class TextOptimizer {
         suggestionModalClose.addEventListener('click', () => this.closeModal(suggestionModal));
         suggestionModalCancel.addEventListener('click', () => this.closeModal(suggestionModal));
 
+        // 语言选择模态框事件
+        const languageModal = document.getElementById('languageModal');
+        const languageModalClose = document.getElementById('languageModalClose');
+        const languageModalCancel = document.getElementById('languageModalCancel');
+        const languageBtns = document.querySelectorAll('.language-btn');
+        
+        languageModalClose.addEventListener('click', () => this.closeModal(languageModal));
+        languageModalCancel.addEventListener('click', () => this.closeModal(languageModal));
+        
+        // 语言按钮事件
+        languageBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetLanguage = btn.dataset.language;
+                this.closeModal(languageModal);
+                const inputText = document.getElementById('inputText').value.trim();
+                this.processText('translate', inputText, targetLanguage);
+            });
+        });
+
         // 初始化属性
         this.currentCaseIndex = 0;
         
@@ -92,12 +111,16 @@ class TextOptimizer {
         suggestionModal.addEventListener('click', (e) => {
             if (e.target === suggestionModal) this.closeModal(suggestionModal);
         });
+        languageModal.addEventListener('click', (e) => {
+            if (e.target === languageModal) this.closeModal(languageModal);
+        });
 
         // ESC key to close modals
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeModal(customModal);
                 this.closeModal(suggestionModal);
+                this.closeModal(languageModal);
             }
         });
     }
@@ -391,7 +414,7 @@ class TextOptimizer {
             {
                 text: "我们运用了最先进的人工智能技术和深度学习算法来实现这个功能。",
                 functions: ['simplify'],
-                type: 'PPT通俗表达'
+                type: 'PPT朴实表达'
             },
             {
                 text: "这个项目可以帮助公司节省成本，提高工作效率。",
@@ -399,9 +422,9 @@ class TextOptimizer {
                 type: 'PPT内容具体化'
             },
             {
-                text: "2024年第一季度，我们实现了营收增长，用户数量增加，",
-                functions: ['continue'],
-                type: 'PPT内容续写'
+                text: "Our product is easy to use and has many features. Users give positive feedback and market performance is good.",
+                functions: ['translate'],
+                type: 'PPT英文翻译'
             },
             {
                 text: "我们团队在过去一年里完成了很多项目取得了不错的成绩客户满意度也很高希望今年能继续保持。",
@@ -471,18 +494,17 @@ class TextOptimizer {
             optimize: '优化表达',
             expand: '扩写',
             summarize: '缩写',
-            simplify: '朴实表达',
+            simplify: '表达更朴实',
             emotional: '表达更具体',
-            continue: '续写',
+            translate: '翻译',
             check: '检查错误',
             custom: '自定义修改'
         };
         
-        return functionTypes.map(type => names[type] || type);
+        return functionTypes.map(type => names[type] || type).join('、');
     }
 
     updateCharCount() {
-        const inputText = document.getElementById('inputText');
         const charCount = document.querySelector('.char-count');
         const length = inputText.value.length;
         charCount.textContent = `${length} / 2000`;
@@ -518,6 +540,8 @@ class TextOptimizer {
 
         if (functionType === 'custom') {
             this.showCustomModal();
+        } else if (functionType === 'translate') {
+            this.showLanguageModal();
         } else {
             this.processText(functionType, inputText);
         }
@@ -527,6 +551,11 @@ class TextOptimizer {
         const modal = document.getElementById('customModal');
         modal.classList.add('show');
         document.getElementById('customRequirement').focus();
+    }
+
+    showLanguageModal() {
+        const modal = document.getElementById('languageModal');
+        modal.classList.add('show');
     }
 
     openModal(modal) {
@@ -552,6 +581,12 @@ class TextOptimizer {
     }
 
     async processText(functionType, text, extra = '') {
+        // 验证输入文本
+        if (!text || text.trim() === '') {
+            this.showToast('❌ 请先输入要处理的文案内容', 'error');
+            return;
+        }
+        
         this.showOutput();
         this.showLoading();
 
@@ -602,6 +637,11 @@ class TextOptimizer {
             if (functionType === 'custom' && extra) {
                 requestBody.customPrompt = extra;
             }
+            
+            // 添加翻译目标语言参数
+            if (functionType === 'translate' && extra) {
+                requestBody.targetLanguage = extra;
+            }
 
             console.log('📤 Sending request:', requestBody);
 
@@ -650,11 +690,9 @@ class TextOptimizer {
             
             emotional: `【表达更具体】\n\n${text}\n\n具体化表达：这个项目预计每年为公司节省运营成本约15-20%，相当于节省200-300万元。通过自动化流程，员工工作效率提升35%，原本需要2小时的任务现在只需45分钟完成。实施后，客户满意度从78%提升至92%，投资回报率达到180%。`,
             
-            continue: `【续写内容】\n\n${text}\n\n继续这个思路，我们可以进一步探讨相关的问题。从另一个角度来看，这个话题还有很多值得深入思考的地方。比如说，我们可以从实际应用的角度来分析，也可以从理论基础的层面来思考。总的来说，这是一个既有现实意义又有理论价值的重要话题。`,
+            translate: `【翻译结果】\n\n原文：${text}\n\n译文：我们的产品易于使用，功能丰富。用户反馈积极，市场表现良好。`,
             
             check: `【错误检查结果】\n\n原文：${text}\n\n✅ 检查完成！\n\n发现的问题：\n• 建议将某些表达方式进行优化\n• 个别标点符号使用可以更规范\n• 整体语言流畅度良好\n\n修正建议：保持现有表达风格，注意标点符号的准确使用。`,
-            
-            translate: this.getTranslationResult(text, extra),
             
             custom: `【根据您的需求修改】\n\n原文：${text}\n\n您的需求：${extra}\n\n修改后：${text}（已根据"${extra}"的要求进行调整，在保持原意的基础上，按照您的具体需求对表达方式、语气、风格等方面进行了相应的优化和改进。）`
         };
@@ -818,11 +856,10 @@ class TextOptimizer {
             optimize: '优化表达结果',
             expand: '扩写结果',
             summarize: '缩写结果',
-            simplify: '朴实表达结果',
+            simplify: '表达更朴实结果',
             emotional: '表达更具体结果',
-            continue: '续写结果',
-            check: '错误检查结果',
             translate: '翻译结果',
+            check: '错误检查结果',
             custom: '自定义修改结果'
         };
 

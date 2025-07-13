@@ -86,7 +86,7 @@
                                     <path d="M24 34V16" stroke="#FFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </div>
-                            <div class="function-title">朴实表达</div>
+                            <div class="function-title">表达更朴实</div>
                         </button>
 
                         <button class="function-btn" data-function="emotional">
@@ -247,6 +247,35 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="suggestionModalCancel">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 语言选择模态框 -->
+    <div class="modal" id="languageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>选择翻译语言</h3>
+                <button class="modal-close" id="languageModalClose">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="language-grid">
+                    <button class="language-btn" data-language="英语">English 英语</button>
+                    <button class="language-btn" data-language="日语">日本語 日语</button>
+                    <button class="language-btn" data-language="韩语">한국어 韩语</button>
+                    <button class="language-btn" data-language="法语">Français 法语</button>
+                    <button class="language-btn" data-language="德语">Deutsch 德语</button>
+                    <button class="language-btn" data-language="西班牙语">Español 西班牙语</button>
+                    <button class="language-btn" data-language="俄语">Русский 俄语</button>
+                    <button class="language-btn" data-language="阿拉伯语">العربية 阿拉伯语</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="languageModalCancel">取消</button>
             </div>
         </div>
     </div>
