@@ -63,6 +63,8 @@ class TextOptimizer {
         });
 
         // Output actions
+        const editBtn = document.getElementById('editBtn');
+        editBtn.addEventListener('click', () => this.toggleEdit());
         copyBtn.addEventListener('click', () => this.copyOutput());
         useAsInputBtn.addEventListener('click', () => this.useOutputAsInput());
 
@@ -139,7 +141,7 @@ class TextOptimizer {
         const inputText = document.getElementById('inputText').value.trim();
         
         if (!inputText) {
-            this.showToast('请先输入要分析的文案内容', 'error');
+            // this.showToast('请先输入要分析的文案内容', 'error');
             return;
         }
 
@@ -389,7 +391,7 @@ class TextOptimizer {
             const suggestionModal = document.getElementById('suggestionModal');
             this.closeModal(suggestionModal);
             
-            this.showToast(`已应用${suggestion.type}建议`, 'success');
+            // this.showToast(`已应用${suggestion.type}建议`, 'success');
         }
     }
 
@@ -460,8 +462,8 @@ class TextOptimizer {
             this.highlightRecommendedFunctions(currentCase.functions);
             
             // 显示提示
-            const recommendedText = this.getFunctionNames(currentCase.functions)[0]; // 只取第一个功能名称
-            this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
+            const recommendedText = this.getFunctionNames(currentCase.functions); // 只取第一个功能名称
+            // this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
             
             // 滚动到输入框
             inputTextArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -533,7 +535,7 @@ class TextOptimizer {
         
         if (!inputText) {
             console.log('❌ No input text provided');
-            this.showToast('请先输入要处理的文本');
+            // this.showToast('请先输入要处理的文本');
             return;
         }
 
@@ -572,7 +574,7 @@ class TextOptimizer {
         const inputText = document.getElementById('inputText').value.trim();
         
         if (!requirement) {
-            this.showToast('请输入自定义需求');
+            // this.showToast('请输入自定义需求');
             return;
         }
 
@@ -584,7 +586,7 @@ class TextOptimizer {
     async processText(functionType, text, extra = '') {
         // 验证输入文本
         if (!text || text.trim() === '') {
-            this.showToast('❌ 请先输入要处理的文案内容', 'error');
+            // this.showToast('❌ 请先输入要处理的文案内容', 'error');
             return;
         }
         
@@ -604,7 +606,8 @@ class TextOptimizer {
             setTimeout(() => {
                 this.displayResult(functionType, result);
                 this.hideLoading();
-                this.showToast('✅ AI处理完成！', 'success');
+                // 移除可能挡住"用作输入"按钮的toast提示
+                // this.showToast('✅ AI处理完成！', 'success');
             }, 800);
             
         } catch (error) {
@@ -620,7 +623,7 @@ class TextOptimizer {
                     
                 this.displayError(errorMessage);
                 this.hideLoading();
-                this.showToast('❌ AI处理失败，请重试', 'error');
+                // this.showToast('❌ AI处理失败，请重试', 'error');
             }, 500);
         }
     }
@@ -863,22 +866,49 @@ class TextOptimizer {
             emotional: '表达更具体结果',
             translate: '翻译结果',
             check: '错误检查结果',
-            translate: '翻译结果',
             custom: '自定义修改结果'
         };
 
         const outputTitle = document.getElementById('outputTitle');
         const outputText = document.getElementById('outputText');
+        const copyBtn = document.getElementById('copyBtn');
+        const useAsInputBtn = document.getElementById('useAsInputBtn');
+        const editBtn = document.getElementById('editBtn');
         
         console.log('🔍 Output elements found:', {
             outputTitle: !!outputTitle,
-            outputText: !!outputText
+            outputText: !!outputText,
+            copyBtn: !!copyBtn,
+            useAsInputBtn: !!useAsInputBtn,
+            editBtn: !!editBtn
         });
         
         if (outputTitle && outputText) {
             outputTitle.textContent = functionTitles[functionType] || '处理结果';
             outputText.textContent = result;
             outputText.style.color = '#1d1d1f'; // 确保文字颜色正确
+            
+            // 重置编辑状态
+            outputText.setAttribute('contenteditable', 'false');
+            const editBtnText = document.getElementById('editBtnText');
+            if (editBtnText) editBtnText.textContent = '编辑';
+            
+            // 显示所有操作按钮（移除hide类，添加show类）
+            if (copyBtn) {
+                copyBtn.classList.remove('hide');
+                copyBtn.classList.add('show');
+                copyBtn.style.cssText = '';  // 清除任何内联样式
+            }
+            if (useAsInputBtn) {
+                useAsInputBtn.classList.remove('hide');
+                useAsInputBtn.classList.add('show');
+                useAsInputBtn.style.cssText = '';  // 清除任何内联样式
+            }
+            if (editBtn) {
+                editBtn.classList.remove('hide');
+                editBtn.classList.add('show');
+                editBtn.style.cssText = '';  // 清除任何内联样式
+            }
             
             console.log('✅ Result displayed successfully');
         } else {
@@ -902,7 +932,7 @@ class TextOptimizer {
         
         try {
             await navigator.clipboard.writeText(outputText);
-            this.showToast('已复制到剪贴板');
+            // this.showToast('已复制到剪贴板');
         } catch (error) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -912,9 +942,9 @@ class TextOptimizer {
             
             try {
                 document.execCommand('copy');
-                this.showToast('已复制到剪贴板');
+                // this.showToast('已复制到剪贴板');
             } catch (err) {
-                this.showToast('复制失败，请手动复制');
+                // this.showToast('复制失败，请手动复制');
             }
             
             document.body.removeChild(textArea);
@@ -922,8 +952,11 @@ class TextOptimizer {
     }
 
     useOutputAsInput() {
-        const outputText = document.getElementById('outputText').textContent;
+        const outputTextElement = document.getElementById('outputText');
         const inputTextArea = document.getElementById('inputText');
+        
+        // 获取输出文本内容（可能已经被用户编辑过）
+        const outputText = outputTextElement.textContent || outputTextElement.innerText;
         
         inputTextArea.value = outputText;
         this.updateCharCount();
@@ -932,7 +965,52 @@ class TextOptimizer {
         // 聚焦到输入区域
         inputTextArea.focus();
         
-        this.showToast('已将结果设为新的输入文本');
+        // 如果文本被编辑过，提示用户
+        const isEdited = outputTextElement.getAttribute('contenteditable') === 'true';
+        if (isEdited) {
+            // this.showToast('✅ 已将编辑后的内容设为新的输入文本');
+        } else {
+            // this.showToast('已将结果设为新的输入文本');
+        }
+    }
+
+    toggleEdit() {
+        const outputText = document.getElementById('outputText');
+        const editBtn = document.getElementById('editBtn');
+        const editBtnText = document.getElementById('editBtnText');
+        const copyBtn = document.getElementById('copyBtn');
+        const useAsInputBtn = document.getElementById('useAsInputBtn');
+        const isEditable = outputText.getAttribute('contenteditable') === 'true';
+        
+        if (isEditable) {
+            // 切换到只读模式
+            outputText.setAttribute('contenteditable', 'false');
+            editBtnText.textContent = '编辑';
+            // this.showToast('✅ 编辑完成，已保存更改', 'success');
+        } else {
+            // 切换到编辑模式
+            outputText.setAttribute('contenteditable', 'true');
+            outputText.focus();
+            editBtnText.textContent = '完成';
+            // this.showToast('✏️ 现在可以编辑输出内容', 'info');
+        }
+        
+        // 确保所有按钮保持可见状态（强制显示并覆盖内联样式）
+        if (copyBtn) {
+            copyBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
+            copyBtn.classList.remove('show', 'hide', 'force-visible');
+            copyBtn.offsetHeight;
+        }
+        if (useAsInputBtn) {
+            useAsInputBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
+            useAsInputBtn.classList.remove('show', 'hide', 'force-visible');
+            useAsInputBtn.offsetHeight;
+        }
+        if (editBtn) {
+            editBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
+            editBtn.classList.remove('show', 'hide', 'force-visible');
+            editBtn.offsetHeight;
+        }
     }
 
     showToast(message, type = 'info') {
@@ -947,35 +1025,49 @@ class TextOptimizer {
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         
-        // 添加样式
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#34c759' : type === 'error' ? '#ff3b30' : '#007aff'};
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 10000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            max-width: 300px;
-            word-wrap: break-word;
-        `;
+        // 逐个设置样式属性，避免样式冲突
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.background = type === 'success' ? '#2d2d2d' : type === 'error' ? '#1a1a1a' : '#333333';
+        toast.style.color = 'white';
+        toast.style.padding = '10px 16px';
+        toast.style.borderRadius = '6px';
+        toast.style.fontSize = '14px';
+        toast.style.fontWeight = '500';
+        toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+        toast.style.zIndex = '1000';
+        toast.style.maxWidth = '300px';
+        toast.style.width = 'auto';
+        toast.style.height = 'auto';
+        toast.style.minHeight = 'auto';
+        toast.style.opacity = '0';
+        toast.style.lineHeight = '1.4';
+        toast.style.pointerEvents = 'none';
+        toast.style.display = 'inline-block';
+        toast.style.whiteSpace = 'normal';
+        toast.style.wordWrap = 'break-word';
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.transition = 'all 0.3s ease';
+        
+        // 强制清除可能影响高度的属性
+        toast.style.margin = '0';
+        toast.style.border = 'none';
+        toast.style.outline = 'none';
+        toast.style.boxSizing = 'border-box';
         
         document.body.appendChild(toast);
         
         // 显示动画
         setTimeout(() => {
-            toast.style.transform = 'translateX(0)';
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
         }, 10);
         
         // 自动隐藏
         setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
             setTimeout(() => {
                 if (toast && toast.parentNode) {
                     toast.parentNode.removeChild(toast);
@@ -1070,11 +1162,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         inputTextArea.value = text;
                         if (window.textOptimizer) {
                             window.textOptimizer.updateCharCount();
-                            window.textOptimizer.showToast('文件内容已导入');
+                            // window.textOptimizer.showToast('文件内容已导入');
                         }
                     } else {
                         if (window.textOptimizer) {
-                            window.textOptimizer.showToast('文件内容过长，请确保在2000字符以内');
+                            // window.textOptimizer.showToast('文件内容过长，请确保在2000字符以内');
                         }
                     }
                 };
@@ -1082,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsText(file, 'UTF-8');
             } else {
                 if (window.textOptimizer) {
-                    window.textOptimizer.showToast('请拖拽文本文件(.txt)');
+                    // window.textOptimizer.showToast('请拖拽文本文件(.txt)');
                 }
             }
         }

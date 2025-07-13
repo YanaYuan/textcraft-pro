@@ -461,7 +461,7 @@ class TextOptimizer {
             
             // 显示提示
             const recommendedText = this.getFunctionNames(currentCase.functions)[0]; // 只取第一个功能名称
-            this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
+            // this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
             
             // 滚动到输入框
             inputTextArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -501,7 +501,7 @@ class TextOptimizer {
             custom: '自定义修改'
         };
         
-        return functionTypes.map(type => names[type] || type).join('、');
+        return functionTypes.map(type => names[type] || type);
     }
 
     updateCharCount() {
@@ -943,24 +943,36 @@ class TextOptimizer {
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
         
-        // 添加样式
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#34c759' : type === 'error' ? '#ff3b30' : '#007aff'};
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 10000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            max-width: 300px;
-            word-wrap: break-word;
-        `;
+        // 逐个设置样式属性，避免样式冲突
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.background = type === 'success' ? '#2d2d2d' : type === 'error' ? '#1a1a1a' : '#333333';
+        toast.style.color = 'white';
+        toast.style.padding = '10px 16px';
+        toast.style.borderRadius = '6px';
+        toast.style.fontSize = '14px';
+        toast.style.fontWeight = '500';
+        toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+        toast.style.zIndex = '1000';
+        toast.style.maxWidth = '300px';
+        toast.style.width = 'auto';
+        toast.style.height = 'auto';
+        toast.style.minHeight = 'auto';
+        toast.style.opacity = '1';
+        toast.style.lineHeight = '1.4';
+        toast.style.pointerEvents = 'none';
+        toast.style.display = 'inline-block';
+        toast.style.whiteSpace = 'normal';
+        toast.style.wordWrap = 'break-word';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'transform 0.3s ease';
+        
+        // 强制清除可能影响高度的属性
+        toast.style.margin = '0';
+        toast.style.border = 'none';
+        toast.style.outline = 'none';
+        toast.style.boxSizing = 'border-box';
         
         document.body.appendChild(toast);
         
