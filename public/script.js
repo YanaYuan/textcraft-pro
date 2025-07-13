@@ -17,13 +17,15 @@ class TextOptimizer {
         const functionBtns = document.querySelectorAll('.function-btn');
         const copyBtn = document.getElementById('copyBtn');
         const useAsInputBtn = document.getElementById('useAsInputBtn');
+        const editBtn = document.getElementById('editBtn');
         
         console.log('📋 Found elements:', {
             inputText: !!inputText,
             clearBtn: !!clearBtn,
             functionBtns: functionBtns.length,
             copyBtn: !!copyBtn,
-            useAsInputBtn: !!useAsInputBtn
+            useAsInputBtn: !!useAsInputBtn,
+            editBtn: !!editBtn
         });
         
         // Modal elements
@@ -63,10 +65,15 @@ class TextOptimizer {
         });
 
         // Output actions
-        const editBtn = document.getElementById('editBtn');
-        editBtn.addEventListener('click', () => this.toggleEdit());
-        copyBtn.addEventListener('click', () => this.copyOutput());
-        useAsInputBtn.addEventListener('click', () => this.useOutputAsInput());
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => this.copyOutput());
+        }
+        if (useAsInputBtn) {
+            useAsInputBtn.addEventListener('click', () => this.useOutputAsInput());
+        }
+        if (editBtn) {
+            editBtn.addEventListener('click', () => this.toggleEditMode());
+        }
 
         // Modal events
         modalClose.addEventListener('click', () => this.closeModal(customModal));
@@ -141,7 +148,7 @@ class TextOptimizer {
         const inputText = document.getElementById('inputText').value.trim();
         
         if (!inputText) {
-            // this.showToast('请先输入要分析的文案内容', 'error');
+            this.showToast('请先输入要分析的文案内容', 'error');
             return;
         }
 
@@ -391,7 +398,7 @@ class TextOptimizer {
             const suggestionModal = document.getElementById('suggestionModal');
             this.closeModal(suggestionModal);
             
-            // this.showToast(`已应用${suggestion.type}建议`, 'success');
+            this.showToast(`已应用${suggestion.type}建议`, 'success');
         }
     }
 
@@ -462,7 +469,7 @@ class TextOptimizer {
             this.highlightRecommendedFunctions(currentCase.functions);
             
             // 显示提示
-            const recommendedText = this.getFunctionNames(currentCase.functions); // 只取第一个功能名称
+            const recommendedText = this.getFunctionNames(currentCase.functions)[0]; // 只取第一个功能名称
             // this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
             
             // 滚动到输入框
@@ -507,7 +514,6 @@ class TextOptimizer {
     }
 
     updateCharCount() {
-        const inputText = document.getElementById('inputText');
         const charCount = document.querySelector('.char-count');
         const length = inputText.value.length;
         charCount.textContent = `${length} / 2000`;
@@ -535,7 +541,7 @@ class TextOptimizer {
         
         if (!inputText) {
             console.log('❌ No input text provided');
-            // this.showToast('请先输入要处理的文本');
+            this.showToast('请先输入要处理的文本');
             return;
         }
 
@@ -574,7 +580,7 @@ class TextOptimizer {
         const inputText = document.getElementById('inputText').value.trim();
         
         if (!requirement) {
-            // this.showToast('请输入自定义需求');
+            this.showToast('请输入自定义需求');
             return;
         }
 
@@ -586,7 +592,7 @@ class TextOptimizer {
     async processText(functionType, text, extra = '') {
         // 验证输入文本
         if (!text || text.trim() === '') {
-            // this.showToast('❌ 请先输入要处理的文案内容', 'error');
+            this.showToast('❌ 请先输入要处理的文案内容', 'error');
             return;
         }
         
@@ -606,8 +612,7 @@ class TextOptimizer {
             setTimeout(() => {
                 this.displayResult(functionType, result);
                 this.hideLoading();
-                // 移除可能挡住"用作输入"按钮的toast提示
-                // this.showToast('✅ AI处理完成！', 'success');
+                this.showToast('✅ AI处理完成！', 'success');
             }, 800);
             
         } catch (error) {
@@ -623,7 +628,7 @@ class TextOptimizer {
                     
                 this.displayError(errorMessage);
                 this.hideLoading();
-                // this.showToast('❌ AI处理失败，请重试', 'error');
+                this.showToast('❌ AI处理失败，请重试', 'error');
             }, 500);
         }
     }
@@ -698,8 +703,6 @@ class TextOptimizer {
             
             check: `【错误检查结果】\n\n原文：${text}\n\n✅ 检查完成！\n\n发现的问题：\n• 建议将某些表达方式进行优化\n• 个别标点符号使用可以更规范\n• 整体语言流畅度良好\n\n修正建议：保持现有表达风格，注意标点符号的准确使用。`,
             
-            translate: this.getTranslationResult(text, extra),
-            
             custom: `【根据您的需求修改】\n\n原文：${text}\n\n您的需求：${extra}\n\n修改后：${text}（已根据"${extra}"的要求进行调整，在保持原意的基础上，按照您的具体需求对表达方式、语气、风格等方面进行了相应的优化和改进。）`
         };
 
@@ -736,6 +739,10 @@ class TextOptimizer {
         if (outputPlaceholder && outputContent) {
             outputPlaceholder.style.display = 'none';
             outputContent.style.display = 'flex';
+            
+            // 重置编辑状态，确保显示新结果时回到正常模式
+            this.resetEditState();
+            
             console.log('✅ Output section shown');
         } else {
             console.error('❌ Output section elements not found!');
@@ -759,6 +766,9 @@ class TextOptimizer {
         loadingElement.style.display = 'flex';
         outputTextElement.style.display = 'none';
         
+        // 禁用输出区域的操作按钮
+        this.disableOutputButtons();
+        
         // 重置进度条
         this.resetProgress();
         
@@ -777,6 +787,9 @@ class TextOptimizer {
         
         loadingElement.style.display = 'none';
         outputTextElement.style.display = 'block';
+        
+        // 重新启用输出区域的操作按钮
+        this.enableOutputButtons();
     }
 
     resetProgress() {
@@ -871,44 +884,16 @@ class TextOptimizer {
 
         const outputTitle = document.getElementById('outputTitle');
         const outputText = document.getElementById('outputText');
-        const copyBtn = document.getElementById('copyBtn');
-        const useAsInputBtn = document.getElementById('useAsInputBtn');
-        const editBtn = document.getElementById('editBtn');
         
         console.log('🔍 Output elements found:', {
             outputTitle: !!outputTitle,
-            outputText: !!outputText,
-            copyBtn: !!copyBtn,
-            useAsInputBtn: !!useAsInputBtn,
-            editBtn: !!editBtn
+            outputText: !!outputText
         });
         
         if (outputTitle && outputText) {
             outputTitle.textContent = functionTitles[functionType] || '处理结果';
             outputText.textContent = result;
             outputText.style.color = '#1d1d1f'; // 确保文字颜色正确
-            
-            // 重置编辑状态
-            outputText.setAttribute('contenteditable', 'false');
-            const editBtnText = document.getElementById('editBtnText');
-            if (editBtnText) editBtnText.textContent = '编辑';
-            
-            // 显示所有操作按钮（移除hide类，添加show类）
-            if (copyBtn) {
-                copyBtn.classList.remove('hide');
-                copyBtn.classList.add('show');
-                copyBtn.style.cssText = '';  // 清除任何内联样式
-            }
-            if (useAsInputBtn) {
-                useAsInputBtn.classList.remove('hide');
-                useAsInputBtn.classList.add('show');
-                useAsInputBtn.style.cssText = '';  // 清除任何内联样式
-            }
-            if (editBtn) {
-                editBtn.classList.remove('hide');
-                editBtn.classList.add('show');
-                editBtn.style.cssText = '';  // 清除任何内联样式
-            }
             
             console.log('✅ Result displayed successfully');
         } else {
@@ -921,6 +906,9 @@ class TextOptimizer {
         document.getElementById('outputText').textContent = message;
         document.getElementById('outputText').style.color = '#ff3b30';
         
+        // 重新启用输出区域的操作按钮
+        this.enableOutputButtons();
+        
         // 恢复默认颜色
         setTimeout(() => {
             document.getElementById('outputText').style.color = '#1d1d1f';
@@ -932,7 +920,7 @@ class TextOptimizer {
         
         try {
             await navigator.clipboard.writeText(outputText);
-            // this.showToast('已复制到剪贴板');
+            this.showToast('已复制到剪贴板');
         } catch (error) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -942,9 +930,9 @@ class TextOptimizer {
             
             try {
                 document.execCommand('copy');
-                // this.showToast('已复制到剪贴板');
+                this.showToast('已复制到剪贴板');
             } catch (err) {
-                // this.showToast('复制失败，请手动复制');
+                this.showToast('复制失败，请手动复制');
             }
             
             document.body.removeChild(textArea);
@@ -952,67 +940,206 @@ class TextOptimizer {
     }
 
     useOutputAsInput() {
-        const outputTextElement = document.getElementById('outputText');
+        // 检查是否在编辑模式，如果是则使用编辑的内容
+        const outputEdit = document.getElementById('outputEdit');
+        const outputText = document.getElementById('outputText');
         const inputTextArea = document.getElementById('inputText');
         
-        // 获取输出文本内容（可能已经被用户编辑过）
-        const outputText = outputTextElement.textContent || outputTextElement.innerText;
+        let textToUse;
+        if (outputEdit.style.display !== 'none') {
+            // 编辑模式，使用编辑框的内容
+            textToUse = outputEdit.value;
+        } else {
+            // 正常模式，使用显示的内容
+            textToUse = outputText.textContent;
+        }
         
-        inputTextArea.value = outputText;
+        inputTextArea.value = textToUse;
         this.updateCharCount();
         this.hideOutput();
         
         // 聚焦到输入区域
         inputTextArea.focus();
         
-        // 如果文本被编辑过，提示用户
-        const isEdited = outputTextElement.getAttribute('contenteditable') === 'true';
-        if (isEdited) {
-            // this.showToast('✅ 已将编辑后的内容设为新的输入文本');
+        this.showToast('已将结果设为新的输入文本');
+    }
+
+    // 切换编辑模式
+    toggleEditMode() {
+        const outputEdit = document.getElementById('outputEdit');
+        
+        // 检查当前是否在编辑模式
+        if (outputEdit.style.display === 'none' || !outputEdit.style.display) {
+            // 当前是显示模式，切换到编辑模式
+            this.startEditMode();
         } else {
-            // this.showToast('已将结果设为新的输入文本');
+            // 当前是编辑模式，保存并退出
+            this.finishEdit();
         }
     }
 
-    toggleEdit() {
+    // 开始编辑模式
+    startEditMode() {
         const outputText = document.getElementById('outputText');
+        const outputEdit = document.getElementById('outputEdit');
+        
+        // 保存原始内容用于取消编辑
+        this.originalOutputText = outputText.textContent;
+        
+        // 将显示的文本复制到编辑框
+        outputEdit.value = outputText.textContent;
+        
+        // 显示编辑界面，隐藏显示界面
+        outputText.style.display = 'none';
+        outputEdit.style.display = 'block';
+        
+        // 设置按钮为编辑状态（完成图标和文本）
+        this.setEditButtonState(true);
+        
+        // 聚焦到编辑框
+        outputEdit.focus();
+        
+        this.showToast('进入编辑模式，可以修改文案内容', 'info');
+    }
+
+    // 完成编辑（保存并退出）
+    finishEdit() {
+        const outputText = document.getElementById('outputText');
+        const outputEdit = document.getElementById('outputEdit');
         const editBtn = document.getElementById('editBtn');
-        const editBtnText = document.getElementById('editBtnText');
+        
+        // 获取编辑后的内容
+        const editedContent = outputEdit.value.trim();
+        
+        if (!editedContent) {
+            this.showToast('编辑内容不能为空', 'error');
+            return;
+        }
+        
+        // 更新显示的内容
+        outputText.textContent = editedContent;
+        
+        // 退出编辑模式
+        this.exitEditMode();
+        
+        this.showToast('文案已保存', 'success');
+    }
+
+    // 保存编辑
+    saveEdit() {
+        this.finishEdit();
+    }
+
+    // 取消编辑
+    cancelEdit() {
+        this.exitEditMode();
+        this.showToast('已取消编辑', 'info');
+    }
+
+    // 退出编辑模式
+    exitEditMode() {
+        const outputText = document.getElementById('outputText');
+        const outputEdit = document.getElementById('outputEdit');
+        
+        // 恢复显示界面
+        outputText.style.display = 'block';
+        outputEdit.style.display = 'none';
+        
+        // 设置按钮为正常状态（编辑图标和文本）
+        this.setEditButtonState(false);
+        
+        // 清除保存的原始内容
+        this.originalOutputText = null;
+    }
+
+    // 重置编辑状态（用于显示新结果时）
+    resetEditState() {
+        const outputText = document.getElementById('outputText');
+        const outputEdit = document.getElementById('outputEdit');
+        
+        // 确保显示正常的文本区域，隐藏编辑框
+        if (outputText) outputText.style.display = 'block';
+        if (outputEdit) outputEdit.style.display = 'none';
+        
+        // 设置按钮为正常状态（编辑图标和文本）
+        this.setEditButtonState(false);
+        
+        // 清除编辑状态数据
+        this.originalOutputText = null;
+    }
+
+    // 禁用输出区域的操作按钮
+    disableOutputButtons() {
+        const editBtn = document.getElementById('editBtn');
         const copyBtn = document.getElementById('copyBtn');
         const useAsInputBtn = document.getElementById('useAsInputBtn');
-        const isEditable = outputText.getAttribute('contenteditable') === 'true';
         
-        if (isEditable) {
-            // 切换到只读模式
-            outputText.setAttribute('contenteditable', 'false');
-            editBtnText.textContent = '编辑';
-            // this.showToast('✅ 编辑完成，已保存更改', 'success');
-        } else {
-            // 切换到编辑模式
-            outputText.setAttribute('contenteditable', 'true');
-            outputText.focus();
-            editBtnText.textContent = '完成';
-            // this.showToast('✏️ 现在可以编辑输出内容', 'info');
+        if (editBtn) {
+            editBtn.disabled = true;
+            editBtn.style.opacity = '0.5';
+            editBtn.style.cursor = 'not-allowed';
         }
-        
-        // 确保所有按钮保持可见状态（强制显示并覆盖内联样式）
         if (copyBtn) {
-            copyBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
-            copyBtn.classList.remove('show', 'hide', 'force-visible');
-            copyBtn.offsetHeight;
+            copyBtn.disabled = true;
+            copyBtn.style.opacity = '0.5';
+            copyBtn.style.cursor = 'not-allowed';
         }
         if (useAsInputBtn) {
-            useAsInputBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
-            useAsInputBtn.classList.remove('show', 'hide', 'force-visible');
-            useAsInputBtn.offsetHeight;
-        }
-        if (editBtn) {
-            editBtn.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; transition: all 0.2s ease;';
-            editBtn.classList.remove('show', 'hide', 'force-visible');
-            editBtn.offsetHeight;
+            useAsInputBtn.disabled = true;
+            useAsInputBtn.style.opacity = '0.5';
+            useAsInputBtn.style.cursor = 'not-allowed';
         }
     }
 
+    // 启用输出区域的操作按钮
+    enableOutputButtons() {
+        const editBtn = document.getElementById('editBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const useAsInputBtn = document.getElementById('useAsInputBtn');
+        
+        if (editBtn) {
+            editBtn.disabled = false;
+            editBtn.style.opacity = '1';
+            editBtn.style.cursor = 'pointer';
+        }
+        if (copyBtn) {
+            copyBtn.disabled = false;
+            copyBtn.style.opacity = '1';
+            copyBtn.style.cursor = 'pointer';
+        }
+        if (useAsInputBtn) {
+            useAsInputBtn.disabled = false;
+            useAsInputBtn.style.opacity = '1';
+            useAsInputBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // 设置编辑按钮的状态（图标和文本）
+    setEditButtonState(isEditing) {
+        const editBtn = document.getElementById('editBtn');
+        if (!editBtn) return;
+        
+        if (isEditing) {
+            // 编辑模式：显示保存/确认图标和文本
+            editBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" fill="currentColor"/>
+                </svg>
+                完成
+            `;
+        } else {
+            // 正常模式：显示编辑图标和文本
+            editBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Z" fill="currentColor"/>
+                    <path d="m5.21 11.5 1.086 1.086" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                编辑
+            `;
+        }
+    }
+
+    // 显示提示消息
     showToast(message, type = 'info') {
         // 移除现有的toast
         const existingToast = document.querySelector('.toast');
@@ -1041,14 +1168,14 @@ class TextOptimizer {
         toast.style.width = 'auto';
         toast.style.height = 'auto';
         toast.style.minHeight = 'auto';
-        toast.style.opacity = '0';
+        toast.style.opacity = '1';
         toast.style.lineHeight = '1.4';
         toast.style.pointerEvents = 'none';
         toast.style.display = 'inline-block';
         toast.style.whiteSpace = 'normal';
         toast.style.wordWrap = 'break-word';
-        toast.style.transform = 'translateY(-10px)';
-        toast.style.transition = 'all 0.3s ease';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'transform 0.3s ease';
         
         // 强制清除可能影响高度的属性
         toast.style.margin = '0';
@@ -1060,14 +1187,12 @@ class TextOptimizer {
         
         // 显示动画
         setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
+            toast.style.transform = 'translateX(0)';
         }, 10);
         
         // 自动隐藏
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(-10px)';
+            toast.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 if (toast && toast.parentNode) {
                     toast.parentNode.removeChild(toast);
@@ -1162,11 +1287,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         inputTextArea.value = text;
                         if (window.textOptimizer) {
                             window.textOptimizer.updateCharCount();
-                            // window.textOptimizer.showToast('文件内容已导入');
+                            window.textOptimizer.showToast('文件内容已导入');
                         }
                     } else {
                         if (window.textOptimizer) {
-                            // window.textOptimizer.showToast('文件内容过长，请确保在2000字符以内');
+                            window.textOptimizer.showToast('文件内容过长，请确保在2000字符以内');
                         }
                     }
                 };
@@ -1174,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsText(file, 'UTF-8');
             } else {
                 if (window.textOptimizer) {
-                    // window.textOptimizer.showToast('请拖拽文本文件(.txt)');
+                    window.textOptimizer.showToast('请拖拽文本文件(.txt)');
                 }
             }
         }
