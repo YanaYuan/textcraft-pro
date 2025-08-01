@@ -1,8 +1,7 @@
 const https = require('https');
 
-// Azure OpenAI 配置
-const AZURE_OPENAI_ENDPOINT = 'https://hanc04-openai-sweden-central.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview';
-const AZURE_OPENAI_KEY = 'af60f8ec72694fc8bbb785f492ae9a02';
+// 后端服务配置
+const BASE_URL = 'https://officeplus-ai-demo-c7e7ecehgtbbc8c6.eastus2-01.azurewebsites.net';
 
 // 文本优化功能的提示词映射
 const PROMPTS = {
@@ -31,9 +30,9 @@ async function callAzureOpenAI(messages) {
 
         const options = {
             method: 'POST',
+            path: '/api/GPTChat/gpt-4o',
             headers: {
                 'Content-Type': 'application/json',
-                'api-key': AZURE_OPENAI_KEY,
                 'Content-Length': Buffer.byteLength(requestData)
             }
         };
@@ -45,9 +44,8 @@ async function callAzureOpenAI(messages) {
             });
             res.on('end', () => {
                 try {
-                    const response = JSON.parse(data);
-                    if (response.choices && response.choices[0]) {
-                        resolve(response.choices[0].message.content);
+                    if (data) {
+                        resolve(data);
                     } else {
                         reject(new Error('Invalid response from Azure OpenAI'));
                     }
@@ -59,6 +57,51 @@ async function callAzureOpenAI(messages) {
 
         req.on('error', (error) => {
             reject(error);
+        });
+
+        req.write(requestData);
+        req.end();
+    });
+}
+
+// 调用 Qwen API
+async function callQwenAPI(messages) {
+    return new Promise((resolve, reject) => {
+        // 将消息数组转换为单个提示字符串
+        const requestData = JSON.stringify(messages);
+
+        const options = {
+            method: 'POST',
+            path: '/api/QwenChat/dmxapi',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
+            },
+            rejectUnauthorized: false // Allow self-signed certificates
+        };
+
+        const req = https.request(BASE_URL, options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                try {
+                    let responseText = data.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+                    if (responseText) {
+                        resolve(responseText);
+                    } else {
+                        reject(new Error('Empty response from QwenChat API'));
+                    }
+                } catch (error) {
+                    reject(new Error(`Failed to parse QwenChat response: ${error.message}`));
+                }
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(new Error(`QwenChat API request failed: ${error.message}`));
         });
 
         req.write(requestData);
@@ -108,7 +151,7 @@ module.exports = async (req, res) => {
         ];
 
         const result = await callAzureOpenAI(messages);
-        
+
         res.status(200).json({ success: true, result });
         
     } catch (error) {
