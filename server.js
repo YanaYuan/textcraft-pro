@@ -4,53 +4,44 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-// Azure OpenAI 配置
-const AZURE_OPENAI_ENDPOINT = 'https://hanc04-openai-sweden-central.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview';
-const AZURE_OPENAI_KEY = 'af60f8ec72694fc8bbb785f492ae9a02';
+// 后端服务配置
+const BASE_URL = 'https://officeplus-ai-demo-c7e7ecehgtbbc8c6.eastus2-01.azurewebsites.net';
 
 // 文本优化功能的提示词映射
 const PROMPTS = {
-    optimize: '请优化以下文案，使其更加清晰、简洁和有说服力：',
-    expand: '请扩展以下文案，添加一些细节和内容：',
+    optimize: '请优化以下文案，使其更加清晰、简洁和有说服力。直接输出优化后的文本，不要解释、分析或列出多个版本：',
+    expand: '请扩展以下文案，适当增加细节、背景或补充内容，使其更完整、更丰富。保持原文风格。仅输出扩展后的文本，一段话即可，不要说明过程：',
     summarize: '请简明扼要地表达以下内容：',
-    simplify: '请简化以下文案表达方式，使其更容易理解：',
-    emotional: '请让以下文案表达更具体，添加具体的细节、数据、例子或说明：',
+    simplify: '请简化下方文案的表达，使其更易理解，句式更直接、语言更通俗。保留原意，仅输出简化后的文案，不要提供注释或分析：',
+    emotional: '请让以下文案表达更具体，添加具体的细节、数据、例子或说明。只输出增强后的文案，不要解释或多版本输出：',
     translate: '请将以下文案翻译成指定语言：',
-    check: '请检查以下文案是否有用词错误或表达不当的地方，提供修改后的版本：',
+    check: '请检查以下文案是否有用词错误或表达不当的地方，提供修改后的版本，不要说明修改理由：',
     custom: '请根据用户的自定义要求处理以下文案：'
 };
 
 // 调用 Azure OpenAI API
 async function callAzureOpenAI(messages) {
     return new Promise((resolve, reject) => {
-        const requestData = JSON.stringify({
-            messages: messages,
-            max_tokens: 1000,
-            temperature: 0.7,
-            top_p: 0.95,
-            frequency_penalty: 0,
-            presence_penalty: 0
-        });
+        const requestData = JSON.stringify(messages);
 
         const options = {
             method: 'POST',
+            path: '/api/GPTChat/gpt-4o',
             headers: {
                 'Content-Type': 'application/json',
-                'api-key': AZURE_OPENAI_KEY,
                 'Content-Length': Buffer.byteLength(requestData)
             }
         };
 
-        const req = https.request(AZURE_OPENAI_ENDPOINT, options, (res) => {
+        const req = https.request(BASE_URL, options, (res) => {
             let data = '';
             res.on('data', (chunk) => {
                 data += chunk;
             });
             res.on('end', () => {
                 try {
-                    const response = JSON.parse(data);
-                    if (response.choices && response.choices[0]) {
-                        resolve(response.choices[0].message.content);
+                    if (data) {
+                        resolve(data);
                     } else {
                         reject(new Error('Invalid response from Azure OpenAI'));
                     }
@@ -62,6 +53,50 @@ async function callAzureOpenAI(messages) {
 
         req.on('error', (error) => {
             reject(error);
+        });
+
+        req.write(requestData);
+        req.end();
+    });
+}
+
+// 调用 Qwen API
+async function callQwenAPI(messages) {
+    return new Promise((resolve, reject) => {
+        const requestData = JSON.stringify(messages);
+
+        const options = {
+            method: 'POST',
+            path: '/api/QwenChat/dmxapi',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
+            },
+            rejectUnauthorized: false // Allow self-signed certificates
+        };
+
+        const req = https.request(BASE_URL, options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                try {
+                    let responseText = data.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+                    if (responseText) {
+                        resolve(responseText);
+                    } else {
+                        reject(new Error('Empty response from Qwen API'));
+                    }
+                } catch (error) {
+                    reject(new Error(`Failed to parse Qwen API response: ${error.message}`));
+                }
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(new Error(`QwenChat API request failed: ${error.message}`));
         });
 
         req.write(requestData);
@@ -119,12 +154,33 @@ const server = http.createServer(async (req, res) => {
                     }
                 ];
 
-                console.log('Calling Azure OpenAI with messages:', messages);
-                const result = await callAzureOpenAI(messages);
-                console.log('Azure OpenAI result:', result);
+                console.log('Calling both OpenAI and QwenChat APIs...');
+                
+                // 并行调用两个API
+                const [openaiResult, qwenResult] = await Promise.allSettled([
+                    callAzureOpenAI(messages),
+                    callQwenAPI(messages)
+                ]);
+
+                console.log('OpenAI result:', openaiResult);
+                console.log('QwenChat result:', qwenResult);
+
+                const response = {
+                    success: true,
+                    openai: {
+                        success: openaiResult.status === 'fulfilled',
+                        result: openaiResult.status === 'fulfilled' ? openaiResult.value : openaiResult.reason?.message || 'OpenAI API failed',
+                        timestamp: Date.now()
+                    },
+                    qwen: {
+                        success: qwenResult.status === 'fulfilled',
+                        result: qwenResult.status === 'fulfilled' ? qwenResult.value : qwenResult.reason?.message || 'Qwen API failed',
+                        timestamp: Date.now()
+                    }
+                };
                 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, result }));
+                res.end(JSON.stringify(response));
                 
             } catch (error) {
                 console.error('API Error:', error);

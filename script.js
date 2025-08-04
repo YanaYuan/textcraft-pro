@@ -15,17 +15,20 @@ class TextOptimizer {
         const inputText = document.getElementById('inputText');
         const clearBtn = document.getElementById('clearBtn');
         const functionBtns = document.querySelectorAll('.function-btn');
-        const copyBtn = document.getElementById('copyBtn');
-        const useAsInputBtn = document.getElementById('useAsInputBtn');
-        const editBtn = document.getElementById('editBtn');
+
+        const copyOpenAIBtn = document.getElementById('copyOpenAIBtn');
+        const copyQwenBtn = document.getElementById('copyQwenBtn');
+        const useOpenAIAsInputBtn = document.getElementById('useOpenAIAsInputBtn');
+        const useQwenAsInputBtn = document.getElementById('useQwenAsInputBtn');
         
         console.log('📋 Found elements:', {
             inputText: !!inputText,
             clearBtn: !!clearBtn,
             functionBtns: functionBtns.length,
-            copyBtn: !!copyBtn,
-            useAsInputBtn: !!useAsInputBtn,
-            editBtn: !!editBtn
+            copyOpenAIBtn: !!copyOpenAIBtn,
+            copyQwenBtn: !!copyQwenBtn,
+            useOpenAIAsInputBtn: !!useOpenAIAsInputBtn,
+            useQwenAsInputBtn: !!useQwenAsInputBtn
         });
         
         // Modal elements
@@ -65,14 +68,17 @@ class TextOptimizer {
         });
 
         // Output actions
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => this.copyOutput());
+        if (copyOpenAIBtn) {
+            copyOpenAIBtn.addEventListener('click', () => this.copyOpenAI());
         }
-        if (useAsInputBtn) {
-            useAsInputBtn.addEventListener('click', () => this.useOutputAsInput());
+        if (copyQwenBtn) {
+            copyQwenBtn.addEventListener('click', () => this.copyQwen());
         }
-        if (editBtn) {
-            editBtn.addEventListener('click', () => this.toggleEditMode());
+        if (useOpenAIAsInputBtn) {
+            useOpenAIAsInputBtn.addEventListener('click', () => this.useOpenAIAsInput());
+        }
+        if (useQwenAsInputBtn) {
+            useQwenAsInputBtn.addEventListener('click', () => this.useQwenAsInput());
         }
 
         // Modal events
@@ -605,21 +611,10 @@ class TextOptimizer {
             const result = await this.callAPI(functionType, text, extra);
             console.log('🎉 Processing completed successfully');
             
-            // 确保进度条显示完成
-            this.updateProgress(100, '处理完成！', '成功');
-            
-            // 稍等一下再显示结果，让用户看到完成状态
-            setTimeout(() => {
-                this.displayResult(functionType, result);
-                this.hideLoading();
-                this.showToast('✅ AI处理完成！', 'success');
-            }, 800);
+            this.showToast('✅ AI处理完成！', 'success');
             
         } catch (error) {
             console.error('💥 Processing error:', error);
-            
-            // 显示错误进度
-            this.updateProgress(0, '处理失败', '错误');
             
             setTimeout(() => {
                 const errorMessage = error.message.includes('fetch') 
@@ -674,8 +669,11 @@ class TextOptimizer {
             console.log('✅ API Response:', data);
             
             if (data.success) {
-                console.log('🎉 Using AI result:', data.result.substring(0, 100));
-                return data.result;
+                console.log('🎉 Processing dual AI results with streaming display');
+
+                this.displayStreamingResults(functionType, data);
+
+                return data; // Return the full data object with both results
             } else {
                 console.error('❌ API returned error:', data.error);
                 throw new Error(data.error || 'API call failed');
@@ -684,6 +682,87 @@ class TextOptimizer {
             console.error('💥 API call failed completely:', error);
             // 重新抛出错误，不要使用模拟结果
             throw error;
+        }
+    }
+
+    displayStreamingResults(functionType, data) {
+        console.log('🌊 Streaming results display:', { functionType, data });
+
+        const functionTitles = {
+            optimize: '优化表达结果',
+            expand: '扩写结果',
+            summarize: '缩写结果',
+            simplify: '表达更朴实结果',
+            emotional: '表达更具体结果',
+            translate: '翻译结果',
+            check: '错误检查结果',
+            custom: '自定义修改结果'
+        };
+
+        const outputTitle = document.getElementById('outputTitle');
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
+        const openaiLoading = document.getElementById('openaiLoading');
+        const qwenLoading = document.getElementById('qwenLoading');
+
+        if (outputTitle) {
+            outputTitle.textContent = functionTitles[functionType] || '处理结果';
+        }
+
+        if (openaiResult && qwenResult && openaiLoading && qwenLoading) {
+            // OpenAI结果处理
+            if (data.openai && data.openai.success) {
+                console.log('Displaying OpenAI result');
+                openaiLoading.style.display = 'none';
+                openaiResult.style.display = 'block';
+                openaiResult.textContent = data.openai.result;
+                openaiResult.style.color = '#1d1d1f';
+            } else {
+                console.log('OpenAI failed');
+                openaiLoading.style.display = 'none';
+                openaiResult.style.display = 'block';
+                openaiResult.textContent = data.openai ? data.openai.result : 'OpenAI API 连接失败';
+                openaiResult.style.color = '#ff3b30';
+            }
+
+            // Qwen结果处理
+            if (data.qwen && data.qwen.success) {
+                console.log('Displaying Qwen result');
+                qwenLoading.style.display = 'none';
+                qwenResult.style.display = 'block';
+                qwenResult.textContent = data.qwen.result;
+                qwenResult.style.color = '#1d1d1f';
+            } else {
+                console.log('Qwen failed');
+                qwenLoading.style.display = 'none';
+                qwenResult.style.display = 'block';
+                qwenResult.textContent = data.qwen ? data.qwen.result : 'Qwen API 连接失败';
+                qwenResult.style.color = '#ff3b30';
+            }
+
+            this.enableOutputButtons();
+
+            console.log('Streaming results displayed successfully');
+        } else {
+            console.error('Result elements not found!');
+        }
+    }
+
+    // 显示错误信息
+    displayError(errorMessage) {
+        console.log('❌ Displaying error message:', errorMessage);
+
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
+
+        if (openaiResult && qwenResult) {
+            openaiResult.textContent = errorMessage;
+            openaiResult.style.color = '#ff3b30';
+            openaiResult.style.display = 'block';
+
+            qwenResult.textContent = errorMessage;
+            qwenResult.style.color = '#ff3b30';
+            qwenResult.style.display = 'block';
         }
     }
 
@@ -735,7 +814,7 @@ class TextOptimizer {
             outputPlaceholder: !!outputPlaceholder,
             outputContent: !!outputContent
         });
-        
+
         if (outputPlaceholder && outputContent) {
             outputPlaceholder.style.display = 'none';
             outputContent.style.display = 'flex';
@@ -749,128 +828,47 @@ class TextOptimizer {
         }
     }
 
-    hideOutput() {
-        const outputPlaceholder = document.getElementById('outputPlaceholder');
-        const outputContent = document.getElementById('outputContent');
-        
-        outputPlaceholder.style.display = 'flex';
-        outputContent.style.display = 'none';
-    }
-
     showLoading() {
-        console.log('⏳ Starting loading with progress bar...');
-        
-        const loadingElement = document.getElementById('loading');
-        const outputTextElement = document.getElementById('outputText');
-        
-        loadingElement.style.display = 'flex';
-        outputTextElement.style.display = 'none';
-        
+        console.log('⏳ Starting loading...');
+
+        const openaiLoading = document.getElementById('openaiLoading');
+        const qwenLoading = document.getElementById('qwenLoading');
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
+
+        if (openaiLoading && qwenLoading) {
+            openaiLoading.style.display = 'flex';
+            qwenLoading.style.display = 'flex';
+            openaiResult.style.display = 'none';
+            qwenResult.style.display = 'none';
+        }
+
         // 禁用输出区域的操作按钮
         this.disableOutputButtons();
-        
-        // 重置进度条
-        this.resetProgress();
-        
-        // 启动进度条动画
-        this.startProgressAnimation();
     }
 
     hideLoading() {
         console.log('✅ Hiding loading...');
+
+        const openaiLoading = document.getElementById('openaiLoading');
+        const qwenLoading = document.getElementById('qwenLoading');
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
         
-        const loadingElement = document.getElementById('loading');
-        const outputTextElement = document.getElementById('outputText');
-        
-        // 停止进度动画
-        this.stopProgressAnimation();
-        
-        loadingElement.style.display = 'none';
-        outputTextElement.style.display = 'block';
+        if (openaiLoading && qwenLoading) {
+            openaiLoading.style.display = 'none';
+            qwenLoading.style.display = 'none';
+            openaiResult.style.display = 'block';
+            qwenResult.style.display = 'block';
+        }
         
         // 重新启用输出区域的操作按钮
         this.enableOutputButtons();
     }
 
-    resetProgress() {
-        const progressFill = document.getElementById('progressFill');
-        const progressPercent = document.getElementById('progressPercent');
-        const progressStep = document.getElementById('progressStep');
-        const loadingMessage = document.getElementById('loadingMessage');
-        
-        if (progressFill) progressFill.style.width = '0%';
-        if (progressPercent) progressPercent.textContent = '0%';
-        if (progressStep) progressStep.textContent = '初始化中';
-        if (loadingMessage) loadingMessage.textContent = 'AI正在处理中...';
-    }
+    displayResult(functionType, data) {
+        console.log('🎨 Displaying result:', { functionType, data });
 
-    startProgressAnimation() {
-        let progress = 0;
-        let step = 0;
-        
-        const steps = [
-            { progress: 15, message: '连接AI服务', step: '建立连接中' },
-            { progress: 30, message: '分析文本内容', step: '语义分析中' },
-            { progress: 50, message: '生成优化方案', step: 'AI思考中' },
-            { progress: 75, message: '优化文案表达', step: '内容生成中' },
-            { progress: 90, message: '完善输出格式', step: '结果整理中' }
-        ];
-
-        this.progressInterval = setInterval(() => {
-            if (step < steps.length) {
-                const currentStep = steps[step];
-                progress = Math.min(progress + Math.random() * 3 + 1, currentStep.progress);
-                
-                this.updateProgress(Math.floor(progress), currentStep.message, currentStep.step);
-                
-                if (progress >= currentStep.progress) {
-                    step++;
-                }
-            } else {
-                // 最后阶段，缓慢增长到95%
-                progress = Math.min(progress + Math.random() * 1, 95);
-                this.updateProgress(Math.floor(progress), 'AI正在处理中...', '即将完成');
-            }
-        }, 200);
-    }
-
-    stopProgressAnimation() {
-        if (this.progressInterval) {
-            clearInterval(this.progressInterval);
-            this.progressInterval = null;
-        }
-        
-        // 完成动画
-        this.updateProgress(100, '处理完成！', '成功');
-        
-        setTimeout(() => {
-            this.resetProgress();
-        }, 500);
-    }
-
-    updateProgress(percent, message, step) {
-        const progressFill = document.getElementById('progressFill');
-        const progressPercent = document.getElementById('progressPercent');
-        const progressStep = document.getElementById('progressStep');
-        const loadingMessage = document.getElementById('loadingMessage');
-        
-        if (progressFill) {
-            progressFill.style.width = `${percent}%`;
-        }
-        if (progressPercent) {
-            progressPercent.textContent = `${percent}%`;
-        }
-        if (progressStep) {
-            progressStep.textContent = step;
-        }
-        if (loadingMessage) {
-            loadingMessage.textContent = message;
-        }
-    }
-
-    displayResult(functionType, result) {
-        console.log('🎨 Displaying result:', { functionType, resultLength: result?.length });
-        
         const functionTitles = {
             optimize: '优化表达结果',
             expand: '扩写结果',
@@ -883,235 +881,68 @@ class TextOptimizer {
         };
 
         const outputTitle = document.getElementById('outputTitle');
-        const outputText = document.getElementById('outputText');
-        
-        console.log('🔍 Output elements found:', {
-            outputTitle: !!outputTitle,
-            outputText: !!outputText
-        });
-        
-        if (outputTitle && outputText) {
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
+
+        if (outputTitle) {
             outputTitle.textContent = functionTitles[functionType] || '处理结果';
-            outputText.textContent = result;
-            outputText.style.color = '#1d1d1f'; // 确保文字颜色正确
-            
-            console.log('✅ Result displayed successfully');
-        } else {
-            console.error('❌ Output elements not found!');
         }
-    }
 
-    displayError(message) {
-        document.getElementById('outputTitle').textContent = '处理失败';
-        document.getElementById('outputText').textContent = message;
-        document.getElementById('outputText').style.color = '#ff3b30';
-        
-        // 重新启用输出区域的操作按钮
-        this.enableOutputButtons();
-        
-        // 恢复默认颜色
-        setTimeout(() => {
-            document.getElementById('outputText').style.color = '#1d1d1f';
-        }, 3000);
-    }
-
-    async copyOutput() {
-        const outputText = document.getElementById('outputText').textContent;
-        
-        try {
-            await navigator.clipboard.writeText(outputText);
-            this.showToast('已复制到剪贴板');
-        } catch (error) {
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = outputText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                this.showToast('已复制到剪贴板');
-            } catch (err) {
-                this.showToast('复制失败，请手动复制');
+        if (openaiResult && qwenResult) {
+            // 显示OpenAI结果
+            if (data.openai && data.openai.success) {
+                openaiResult.textContent = data.openai.result;
+                openaiResult.style.color = '#1d1d1f';
+            } else {
+                openaiResult.textContent = data.openai ? data.openai.result : 'OpenAI API 连接失败';
+                openaiResult.style.color = '#ff3b30';
             }
-            
-            document.body.removeChild(textArea);
-        }
-    }
 
-    useOutputAsInput() {
-        // 检查是否在编辑模式，如果是则使用编辑的内容
-        const outputEdit = document.getElementById('outputEdit');
-        const outputText = document.getElementById('outputText');
-        const inputTextArea = document.getElementById('inputText');
-        
-        let textToUse;
-        if (outputEdit.style.display !== 'none') {
-            // 编辑模式，使用编辑框的内容
-            textToUse = outputEdit.value;
+            // 显示Qwen结果
+            if (data.qwen && data.qwen.success) {
+                qwenResult.textContent = data.qwen.result;
+                qwenResult.style.color = '#1d1d1f';
+            } else {
+                qwenResult.textContent = data.qwen ? data.qwen.result : 'Qwen API 连接失败';
+                qwenResult.style.color = '#ff3b30';
+            }
+
+            console.log('✅ Dual results displayed successfully');
         } else {
-            // 正常模式，使用显示的内容
-            textToUse = outputText.textContent;
+            console.error('❌ Result elements not found!');
         }
-        
-        inputTextArea.value = textToUse;
-        this.updateCharCount();
-        this.hideOutput();
-        
-        // 聚焦到输入区域
-        inputTextArea.focus();
-        
-        this.showToast('已将结果设为新的输入文本');
-    }
-
-    // 切换编辑模式
-    toggleEditMode() {
-        const outputEdit = document.getElementById('outputEdit');
-        
-        // 检查当前是否在编辑模式
-        if (outputEdit.style.display === 'none' || !outputEdit.style.display) {
-            // 当前是显示模式，切换到编辑模式
-            this.startEditMode();
-        } else {
-            // 当前是编辑模式，保存并退出
-            this.finishEdit();
-        }
-    }
-
-    // 开始编辑模式
-    startEditMode() {
-        const outputText = document.getElementById('outputText');
-        const outputEdit = document.getElementById('outputEdit');
-        
-        // 保存原始内容用于取消编辑
-        this.originalOutputText = outputText.textContent;
-        
-        // 将显示的文本复制到编辑框
-        outputEdit.value = outputText.textContent;
-        
-        // 显示编辑界面，隐藏显示界面
-        outputText.style.display = 'none';
-        outputEdit.style.display = 'block';
-        
-        // 设置按钮为编辑状态（完成图标和文本）
-        this.setEditButtonState(true);
-        
-        // 聚焦到编辑框
-        outputEdit.focus();
-        
-        this.showToast('进入编辑模式，可以修改文案内容', 'info');
-    }
-
-    // 完成编辑（保存并退出）
-    finishEdit() {
-        const outputText = document.getElementById('outputText');
-        const outputEdit = document.getElementById('outputEdit');
-        const editBtn = document.getElementById('editBtn');
-        
-        // 获取编辑后的内容
-        const editedContent = outputEdit.value.trim();
-        
-        if (!editedContent) {
-            this.showToast('编辑内容不能为空', 'error');
-            return;
-        }
-        
-        // 更新显示的内容
-        outputText.textContent = editedContent;
-        
-        // 退出编辑模式
-        this.exitEditMode();
-        
-        this.showToast('文案已保存', 'success');
-    }
-
-    // 保存编辑
-    saveEdit() {
-        this.finishEdit();
-    }
-
-    // 取消编辑
-    cancelEdit() {
-        this.exitEditMode();
-        this.showToast('已取消编辑', 'info');
-    }
-
-    // 退出编辑模式
-    exitEditMode() {
-        const outputText = document.getElementById('outputText');
-        const outputEdit = document.getElementById('outputEdit');
-        
-        // 恢复显示界面
-        outputText.style.display = 'block';
-        outputEdit.style.display = 'none';
-        
-        // 设置按钮为正常状态（编辑图标和文本）
-        this.setEditButtonState(false);
-        
-        // 清除保存的原始内容
-        this.originalOutputText = null;
-    }
-
-    // 重置编辑状态（用于显示新结果时）
-    resetEditState() {
-        const outputText = document.getElementById('outputText');
-        const outputEdit = document.getElementById('outputEdit');
-        
-        // 确保显示正常的文本区域，隐藏编辑框
-        if (outputText) outputText.style.display = 'block';
-        if (outputEdit) outputEdit.style.display = 'none';
-        
-        // 设置按钮为正常状态（编辑图标和文本）
-        this.setEditButtonState(false);
-        
-        // 清除编辑状态数据
-        this.originalOutputText = null;
     }
 
     // 禁用输出区域的操作按钮
     disableOutputButtons() {
-        const editBtn = document.getElementById('editBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const useAsInputBtn = document.getElementById('useAsInputBtn');
-        
-        if (editBtn) {
-            editBtn.disabled = true;
-            editBtn.style.opacity = '0.5';
-            editBtn.style.cursor = 'not-allowed';
-        }
-        if (copyBtn) {
-            copyBtn.disabled = true;
-            copyBtn.style.opacity = '0.5';
-            copyBtn.style.cursor = 'not-allowed';
-        }
-        if (useAsInputBtn) {
-            useAsInputBtn.disabled = true;
-            useAsInputBtn.style.opacity = '0.5';
-            useAsInputBtn.style.cursor = 'not-allowed';
-        }
+        const copyOpenAIBtn = document.getElementById('copyOpenAIBtn');
+        const copyQwenBtn = document.getElementById('copyQwenBtn');
+        const useOpenAIAsInputBtn = document.getElementById('useOpenAIAsInputBtn');
+        const useQwenAsInputBtn = document.getElementById('useQwenAsInputBtn');
+
+        [copyOpenAIBtn, copyQwenBtn, useOpenAIAsInputBtn, useQwenAsInputBtn].forEach(btn => {
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        });
     }
 
     // 启用输出区域的操作按钮
     enableOutputButtons() {
-        const editBtn = document.getElementById('editBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const useAsInputBtn = document.getElementById('useAsInputBtn');
-        
-        if (editBtn) {
-            editBtn.disabled = false;
-            editBtn.style.opacity = '1';
-            editBtn.style.cursor = 'pointer';
-        }
-        if (copyBtn) {
-            copyBtn.disabled = false;
-            copyBtn.style.opacity = '1';
-            copyBtn.style.cursor = 'pointer';
-        }
-        if (useAsInputBtn) {
-            useAsInputBtn.disabled = false;
-            useAsInputBtn.style.opacity = '1';
-            useAsInputBtn.style.cursor = 'pointer';
-        }
+        const copyOpenAIBtn = document.getElementById('copyOpenAIBtn');
+        const copyQwenBtn = document.getElementById('copyQwenBtn');
+        const useOpenAIAsInputBtn = document.getElementById('useOpenAIAsInputBtn');
+        const useQwenAsInputBtn = document.getElementById('useQwenAsInputBtn');
+
+        [copyOpenAIBtn, copyQwenBtn, useOpenAIAsInputBtn, useQwenAsInputBtn].forEach(btn => {
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
     }
 
     // 设置编辑按钮的状态（图标和文本）
@@ -1200,12 +1031,83 @@ class TextOptimizer {
             }, 300);
         }, 3000);
     }
+
+    async copyOpenAI() {
+        const openaiResult = document.getElementById('openaiResult').textContent;
+
+        try {
+            await navigator.clipboard.writeText(openaiResult);
+            this.showToast('OpenAI结果已复制到剪贴板');
+        } catch (error) {
+            this.fallbackCopy(openaiResult, 'OpenAI结果');
+        }
+    }
+
+    async copyQwen() {
+        const qwenResult = document.getElementById('qwenResult').textContent;
+
+        try {
+            await navigator.clipboard.writeText(qwenResult);
+            this.showToast('Qwen结果已复制到剪贴板');
+        } catch (error) {
+            this.fallbackCopy(qwenResult, 'Qwen结果');
+        }
+    }
+
+    useOpenAIAsInput() {
+        const openaiResult = document.getElementById('openaiResult').textContent;
+        const inputTextArea = document.getElementById('inputText');
+
+        inputTextArea.value = openaiResult;
+        this.updateCharCount();
+        this.hideOutput();
+
+        inputTextArea.focus();
+        this.showToast('已将OpenAI结果设为新的输入文本');
+    }
+
+    useQwenAsInput() {
+        const qwenResult = document.getElementById('qwenResult').textContent;
+        const inputTextArea = document.getElementById('inputText');
+
+        inputTextArea.value = qwenResult;
+        this.updateCharCount();
+        this.hideOutput();
+
+        inputTextArea.focus();
+        this.showToast('已将Qwen结果设为新的输入文本');
+    }
+
+    // Fallback copy method for older browsers
+    fallbackCopy(text, resultType) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            this.showToast(`${resultType}已复制到剪贴板`);
+        } catch (err) {
+            this.showToast(`${resultType}复制失败，请手动复制`);
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    hideOutput() {
+        const outputPlaceholder = document.getElementById('outputPlaceholder');
+        const outputContent = document.getElementById('outputContent');
+
+        outputPlaceholder.style.display = 'flex';
+        outputContent.style.display = 'none';
+    }
 }
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Content Loaded - Initializing TextOptimizer...');
-    
+
     // 检查关键元素是否存在
     const inputText = document.getElementById('inputText');
     const functionBtns = document.querySelectorAll('.function-btn');
@@ -1225,18 +1127,18 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('❌ No function buttons found!');
         return;
     }
-    
+
     try {
         const optimizer = new TextOptimizer();
         console.log('✅ TextOptimizer initialized successfully');
-        
+
         // 全局调试
         window.textOptimizer = optimizer;
-        
+
     } catch (error) {
         console.error('❌ Failed to initialize TextOptimizer:', error);
     }
-    
+
     // 添加拖拽上传文本文件支持
     const inputContainer = document.querySelector('.input-container');
     const inputTextArea = document.getElementById('inputText');
@@ -1304,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     // 添加键盘快捷键支持
     document.addEventListener('keydown', (e) => {
         // Ctrl/Cmd + Enter 快速优化
@@ -1316,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 optimizeBtn.click();
             }
         }
-        
+
         // Ctrl/Cmd + L 清空输入
         if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
             e.preventDefault();
@@ -1325,3 +1227,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+if (typeof TextOptimizer !== 'undefined') {
+    TextOptimizer.prototype.resetEditState = function() {
+        if (typeof this.enableOutputButtons === 'function') {
+            this.enableOutputButtons();
+        }
+    };
+}
