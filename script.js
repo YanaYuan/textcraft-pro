@@ -1,6 +1,6 @@
 class TextOptimizer {
     constructor() {
-        console.log('🔄 TextOptimizer v2.1 - Modal Integration');
+        console.log('🔄 TextOptimizer v2.2 - Modal Integration');
         this.init();
     }
 
