@@ -106,7 +106,7 @@ async function callQwenAPI(messages) {
 
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
-    
+
     // 设置 CORS 头部
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -126,16 +126,16 @@ const server = http.createServer(async (req, res) => {
         req.on('data', (chunk) => {
             body += chunk.toString();
         });
-        
+
         req.on('end', async () => {
             try {
                 console.log('Request body:', body);
                 const { text, type, customPrompt, targetLanguage } = JSON.parse(body);
                 console.log('Parsed request:', { text, type, customPrompt, targetLanguage });
-                
+
                 let systemPrompt = PROMPTS[type] || PROMPTS.custom;
                 let userMessage = text;
-                
+
                 // 处理特殊情况
                 if (type === 'translate' && targetLanguage) {
                     systemPrompt = `请将以下文案翻译成${targetLanguage}：`;
@@ -155,7 +155,7 @@ const server = http.createServer(async (req, res) => {
                 ];
 
                 console.log('Calling both OpenAI and QwenChat APIs...');
-                
+
                 // 并行调用两个API
                 const [openaiResult, qwenResult] = await Promise.allSettled([
                     callAzureOpenAI(messages),
@@ -178,10 +178,10 @@ const server = http.createServer(async (req, res) => {
                         timestamp: Date.now()
                     }
                 };
-                
+
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(response));
-                
+
             } catch (error) {
                 console.error('API Error:', error);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -196,17 +196,17 @@ const server = http.createServer(async (req, res) => {
 
     // 处理静态文件
     let filePath = req.url === '/' ? '/index.html' : req.url;
-    
+
     // 移除查询参数（如 ?v=4）
     filePath = filePath.split('?')[0];
-    
+
     filePath = path.join(__dirname, filePath);
-    
+
     console.log('📁 Serving static file:', filePath);
-    
+
     // 获取文件扩展名
     const extname = path.extname(filePath);
-    
+
     // 设置Content-Type
     let contentType = 'text/html';
     switch (extname) {
@@ -223,7 +223,7 @@ const server = http.createServer(async (req, res) => {
             contentType = 'image/jpg';
             break;
     }
-    
+
     // 读取文件
     fs.readFile(filePath, (err, content) => {
         if (err) {

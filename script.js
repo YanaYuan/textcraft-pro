@@ -11,7 +11,7 @@ class TextOptimizer {
 
     bindEvents() {
         console.log('🔗 Binding events...');
-        
+
         const inputText = document.getElementById('inputText');
         const clearBtn = document.getElementById('clearBtn');
         const functionBtns = document.querySelectorAll('.function-btn');
@@ -20,7 +20,7 @@ class TextOptimizer {
         const copyQwenBtn = document.getElementById('copyQwenBtn');
         const useOpenAIAsInputBtn = document.getElementById('useOpenAIAsInputBtn');
         const useQwenAsInputBtn = document.getElementById('useQwenAsInputBtn');
-        
+
         console.log('📋 Found elements:', {
             inputText: !!inputText,
             clearBtn: !!clearBtn,
@@ -30,7 +30,7 @@ class TextOptimizer {
             useOpenAIAsInputBtn: !!useOpenAIAsInputBtn,
             useQwenAsInputBtn: !!useQwenAsInputBtn
         });
-        
+
         // Modal elements
         const customModal = document.getElementById('customModal');
         const modalClose = document.getElementById('modalClose');
@@ -52,12 +52,12 @@ class TextOptimizer {
             btn.addEventListener('click', () => {
                 console.log('🖱️ Button clicked:', btn.dataset.function);
                 const functionType = btn.dataset.function;
-                
+
                 // 添加特殊调试用于custom按钮
                 if (functionType === 'custom') {
                     console.log('🔧 Custom button clicked - showing modal');
                 }
-                
+
                 // 特殊处理智能建议按钮
                 if (functionType === 'analysis') {
                     this.openSuggestionModal();
@@ -90,7 +90,7 @@ class TextOptimizer {
         const suggestionModal = document.getElementById('suggestionModal');
         const suggestionModalClose = document.getElementById('suggestionModalClose');
         const suggestionModalCancel = document.getElementById('suggestionModalCancel');
-        
+
         suggestionModalClose.addEventListener('click', () => this.closeModal(suggestionModal));
         suggestionModalCancel.addEventListener('click', () => this.closeModal(suggestionModal));
 
@@ -99,10 +99,10 @@ class TextOptimizer {
         const languageModalClose = document.getElementById('languageModalClose');
         const languageModalCancel = document.getElementById('languageModalCancel');
         const languageBtns = document.querySelectorAll('.language-btn');
-        
+
         languageModalClose.addEventListener('click', () => this.closeModal(languageModal));
         languageModalCancel.addEventListener('click', () => this.closeModal(languageModal));
-        
+
         // 语言按钮事件
         languageBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -115,10 +115,10 @@ class TextOptimizer {
 
         // 初始化属性
         this.currentCaseIndex = 0;
-        
+
         // 绑定demo案例
         this.bindDemoCases();
-        
+
         // Close modal on backdrop click
         customModal.addEventListener('click', (e) => {
             if (e.target === customModal) this.closeModal(customModal);
@@ -152,7 +152,7 @@ class TextOptimizer {
     // 打开智能建议模态框
     openSuggestionModal() {
         const inputText = document.getElementById('inputText').value.trim();
-        
+
         if (!inputText) {
             this.showToast('请先输入要分析的文案内容', 'error');
             return;
@@ -160,41 +160,84 @@ class TextOptimizer {
 
         const suggestionModal = document.getElementById('suggestionModal');
         this.openModal(suggestionModal);
-        
-        // 开始分析
-        this.analyzeTextInModal();
+
+        // Wait a moment for the modal to fully render before starting analysis
+        setTimeout(() => {
+            this.analyzeTextInModal();
+        }, 100);
     }
 
     // 在模态框中分析文本
     async analyzeTextInModal() {
         const inputText = document.getElementById('inputText').value.trim();
-        const loadingDiv = document.getElementById('suggestionLoading');
-        const suggestionsList = document.getElementById('modalSuggestionsList');
-        
+        const openaiLoadingDiv = document.getElementById('openaiSuggestionLoading');
+        const qwenLoadingDiv = document.getElementById('qwenSuggestionLoading');
+        const openaiSuggestionsList = document.getElementById('openaiSuggestionsList');
+        const qwenSuggestionsList = document.getElementById('qwenSuggestionsList');
+
         // 显示加载状态
-        loadingDiv.style.display = 'flex';
-        suggestionsList.innerHTML = '';
-        
+        if (openaiLoadingDiv) openaiLoadingDiv.style.display = 'flex';
+        if (qwenLoadingDiv) qwenLoadingDiv.style.display = 'flex';
+        if (openaiSuggestionsList) openaiSuggestionsList.innerHTML = '';
+        if (qwenSuggestionsList) qwenSuggestionsList.innerHTML = '';
+
         try {
-            const suggestions = await this.generateSuggestions(inputText);
-            this.displaySuggestionsInModal(suggestions);
+            const dualResponse = await this.generateSuggestions(inputText);
+            this.displayDualSuggestionsInModal(dualResponse);
         } catch (error) {
             console.error('Analysis error:', error);
-            suggestionsList.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #666;">
-                    分析失败，请稍后重试
-                </div>
-            `;
+            if (openaiSuggestionsList) {
+                openaiSuggestionsList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        分析失败，请稍后重试
+                    </div>
+                `;
+            }
+            if (qwenSuggestionsList) {
+                qwenSuggestionsList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        分析失败，请稍后重试
+                    </div>
+                `;
+            }
         } finally {
-            loadingDiv.style.display = 'none';
+            if (openaiLoadingDiv) openaiLoadingDiv.style.display = 'none';
+            if (qwenLoadingDiv) qwenLoadingDiv.style.display = 'none';
         }
     }
 
-    // 在模态框中显示建议
-    displaySuggestionsInModal(suggestions) {
-        const suggestionsList = document.getElementById('modalSuggestionsList');
+    // 在模态框中显示双AI建议
+    displayDualSuggestionsInModal(dualResponse) {
+        console.log('🎯 Displaying dual suggestions:', dualResponse);
+
+        // 处理 OpenAI 建议
+        if (dualResponse.openai && dualResponse.openai.success) {
+            const openaiSuggestions = this.parseTextSuggestions(dualResponse.openai.result);
+            this.displaySuggestionsInPanel(openaiSuggestions, 'openai');
+        } else {
+            this.displaySuggestionError('openai', 'OpenAI 建议生成失败');
+        }
+
+        // 处理 Qwen 建议
+        if (dualResponse.qwen && dualResponse.qwen.success) {
+            const qwenSuggestions = this.parseTextSuggestions(dualResponse.qwen.result);
+            this.displaySuggestionsInPanel(qwenSuggestions, 'qwen');
+        } else {
+            this.displaySuggestionError('qwen', 'Qwen 建议生成失败');
+        }
+    }
+
+    // 在指定面板中显示建议
+    displaySuggestionsInPanel(suggestions, aiType) {
+        const suggestionsList = document.getElementById(`${aiType}SuggestionsList`);
+
+        if (!suggestionsList) {
+            console.error(`❌ Suggestions list not found for ${aiType}`);
+            return;
+        }
+
         suggestionsList.innerHTML = '';
-        
+
         if (suggestions.length === 0) {
             suggestionsList.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: #666;">
@@ -203,14 +246,14 @@ class TextOptimizer {
             `;
             return;
         }
-        
+
         suggestions.forEach((suggestion, index) => {
             const suggestionElement = document.createElement('div');
             suggestionElement.className = 'suggestion-item';
             suggestionElement.innerHTML = `
                 <div class="suggestion-header">
                     <span class="suggestion-type">${suggestion.type}</span>
-                    <button class="suggestion-apply" onclick="textOptimizer.applySuggestion(${index})">
+                    <button class="suggestion-apply" onclick="textOptimizer.applySuggestion('${aiType}', ${index})">
                         应用此建议
                     </button>
                 </div>
@@ -221,11 +264,84 @@ class TextOptimizer {
             `;
             suggestionsList.appendChild(suggestionElement);
         });
-        
+
         // 存储建议数据供后续使用
-        this.currentSuggestions = suggestions;
+        if (!this.currentSuggestions) this.currentSuggestions = {};
+        this.currentSuggestions[aiType] = suggestions;
     }
 
+    // 显示建议错误
+    displaySuggestionError(aiType, errorMessage) {
+        const suggestionsList = document.getElementById(`${aiType}SuggestionsList`);
+        if (suggestionsList) {
+            suggestionsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    ${errorMessage}
+                </div>
+            `;
+        }
+    }
+
+    displaySuggestionsInModal(suggestions) {
+        // 这个方法现在被 displayDualSuggestionsInModal 取代
+        // 但保留用于向后兼容
+        console.log('⚠️ Using legacy displaySuggestionsInModal, consider using displayDualSuggestionsInModal');
+
+        const suggestionsList = document.getElementById('modalSuggestionsList');
+        if (!suggestionsList) {
+            // 如果旧的元素不存在，尝试使用新的双面板结构
+            this.displaySuggestionsInPanel(suggestions, 'openai');
+            return;
+        }
+
+        suggestionsList.innerHTML = '';
+
+        if (suggestions.length === 0) {
+            suggestionsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    暂无优化建议
+                </div>
+            `;
+            return;
+        }
+
+        suggestions.forEach((suggestion, index) => {
+            const suggestionElement = document.createElement('div');
+            suggestionElement.className = 'suggestion-item';
+            suggestionElement.innerHTML = `
+                <div class="suggestion-header">
+                    <span class="suggestion-type">${suggestion.type}</span>
+                    <button class="suggestion-apply" onclick="textOptimizer.applyLegacySuggestion(${index})">
+                        应用此建议
+                    </button>
+                </div>
+                <div class="suggestion-text">${suggestion.description}</div>
+                <div class="suggestion-preview">
+                    预览：${suggestion.optimizedText}
+                </div>
+            `;
+            suggestionsList.appendChild(suggestionElement);
+        });
+
+        // 存储建议数据供后续使用（Legacy格式）
+        this.legacySuggestions = suggestions;
+    }
+
+    applyLegacySuggestion(index) {
+        if (this.legacySuggestions && this.legacySuggestions[index]) {
+            const suggestion = this.legacySuggestions[index];
+
+            // 显示到右侧展示区
+            this.showOutput();
+            this.displayResult('suggestion', suggestion.optimizedText);
+
+            // 关闭建议模态框
+            const suggestionModal = document.getElementById('suggestionModal');
+            this.closeModal(suggestionModal);
+
+            this.showToast(`已应用${suggestion.type}建议`, 'success');
+        }
+    }
     // 生成优化建议
     async generateSuggestions(text) {
         const prompt = `请为以下PPT文案提供1-3个具体的优化建议。
@@ -247,43 +363,20 @@ class TextOptimizer {
 说明：调整表达顺序，使逻辑更清晰，先说结论再说论据
 优化后：[优化后的文案]`;
 
-        const response = await fetch('/api/optimize', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                text: prompt,
-                type: 'custom',
-                customPrompt: '分析PPT文案并提供优化建议'
-            })
-        });
+        // 使用现有的 callAPI 方法来获取双AI响应
+        const response = await this.callAPI('custom', prompt, '分析PPT文案并提供优化建议');
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        
-        try {
-            // 尝试解析AI返回的JSON（如果有的话）
-            const parsed = JSON.parse(data.result);
-            if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
-                return parsed.suggestions;
-            }
-        } catch (e) {
-            // AI返回的是文本格式，使用改进的解析方法
-            console.log('🔄 Parsing AI text response...');
-        }
-        
-        // 解析文本格式的回复
-        return this.parseTextSuggestions(data.result);
+        // 返回双AI响应结构
+        return {
+            openai: response.openai,
+            qwen: response.qwen
+        };
     }
 
     // 手动解析文本建议（备用方案）
     parseTextSuggestions(text) {
         console.log('🔍 Parsing text suggestions:', text);
-        
+
         // 首先尝试提取JSON内容
         try {
             const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -297,30 +390,30 @@ class TextOptimizer {
         } catch (e) {
             console.log('📄 No valid JSON found, parsing as text...');
         }
-        
+
         const suggestions = [];
-        
+
         // 清理文本，移除JSON代码块和多余的格式
         let cleanText = text
             .replace(/```json/g, '')
             .replace(/```/g, '')
             .replace(/\{[\s\S]*?\}/g, '') // 移除JSON代码块
             .trim();
-        
+
         // 按"建议"关键词分割
         const suggestionBlocks = cleanText.split(/建议\s*\d+[：:]/i).filter(block => block.trim());
-        
+
         for (let i = 0; i < suggestionBlocks.length; i++) {
             const block = suggestionBlocks[i].trim();
             if (!block) continue;
-            
+
             let type = '表达优化';
             let description = '';
             let optimizedText = '';
-            
+
             // 分析每个建议块
             const lines = block.split('\n').map(l => l.trim()).filter(l => l);
-            
+
             for (const line of lines) {
                 // 识别建议类型
                 if (line.includes('简化') || line.includes('精简')) {
@@ -334,7 +427,7 @@ class TextOptimizer {
                 } else if (line.includes('感染力') || line.includes('情感')) {
                     type = '感染力提升';
                 }
-                
+
                 // 解析不同部分
                 if (line.includes('说明') && line.includes('：')) {
                     description = line.replace(/^说明[：:]/i, '').trim();
@@ -350,7 +443,7 @@ class TextOptimizer {
                     optimizedText = line;
                 }
             }
-            
+
             // 如果解析成功，添加建议
             if (description || optimizedText) {
                 suggestions.push({
@@ -360,23 +453,24 @@ class TextOptimizer {
                 });
             }
         }
-        
+
         // 如果还是没有提取到有效建议，尝试其他方法
         if (suggestions.length === 0) {
             // 按段落分析
             const paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim());
-            
+
             for (const paragraph of paragraphs) {
-                if (paragraph.length > 20) {
+                if (paragraph && paragraph.length > 20) {
+                    const firstLine = paragraph.split('\n')[0];
                     suggestions.push({
                         type: '表达优化',
                         description: '建议优化文案的表达方式，使其更适合PPT展示',
-                        optimizedText: paragraph.split('\n')[0] || paragraph.substring(0, 100)
+                        optimizedText: firstLine || paragraph.substring(0, 100)
                     });
                 }
             }
         }
-        
+
         // 最后的兜底方案
         if (suggestions.length === 0) {
             const inputText = document.getElementById('inputText').value.trim();
@@ -386,26 +480,64 @@ class TextOptimizer {
                 optimizedText: inputText
             });
         }
-        
+
         console.log('✅ Parsed suggestions:', suggestions);
         return suggestions;
     }
 
-    // 应用单个建议
-    applySuggestion(index) {
-        if (this.currentSuggestions && this.currentSuggestions[index]) {
-            const suggestion = this.currentSuggestions[index];
-            
-            // 显示到右侧展示区
-            this.showOutput();
-            this.displayResult('suggestion', suggestion.optimizedText);
-            
-            // 关闭建议模态框
-            const suggestionModal = document.getElementById('suggestionModal');
-            this.closeModal(suggestionModal);
-            
-            this.showToast(`已应用${suggestion.type}建议`, 'success');
+    // 应用单个建议（更新为支持双AI）
+    applySuggestion(aiType, index) {
+        if (!this.currentSuggestions || !this.currentSuggestions[aiType]) {
+            console.error(`❌ No suggestions found for ${aiType}`);
+            return;
         }
+
+        const suggestion = this.currentSuggestions[aiType][index];
+        if (!suggestion) {
+            console.error(`❌ Suggestion ${index} not found for ${aiType}`);
+            return;
+        }
+
+        // 显示到右侧展示区
+        this.showOutput();
+        this.displaySingleSuggestionResult(suggestion, aiType);
+
+        // 关闭建议模态框
+        const suggestionModal = document.getElementById('suggestionModal');
+        this.closeModal(suggestionModal);
+
+        this.showToast(`已应用${aiType.toUpperCase()}的${suggestion.type}建议`, 'success');
+    }
+
+    // 显示单个建议结果
+    displaySingleSuggestionResult(suggestion, aiType) {
+        const outputTitle = document.getElementById('outputTitle');
+        const openaiResult = document.getElementById('openaiResult');
+        const qwenResult = document.getElementById('qwenResult');
+
+        if (outputTitle) {
+            outputTitle.textContent = `${suggestion.type} - ${aiType.toUpperCase()} 建议`;
+        }
+
+        // 清空两个结果面板
+        if (openaiResult) {
+            openaiResult.textContent = '';
+            openaiResult.style.display = 'none';
+        }
+        if (qwenResult) {
+            qwenResult.textContent = '';
+            qwenResult.style.display = 'none';
+        }
+
+        // 在对应的面板显示建议结果
+        const targetResult = document.getElementById(`${aiType.toLowerCase()}Result`);
+        if (targetResult) {
+            targetResult.textContent = suggestion.optimizedText;
+            targetResult.style.color = '#1d1d1f';
+            targetResult.style.display = 'block';
+        }
+
+        this.enableOutputButtons();
     }
 
     // 按顺序加载下一个demo案例
@@ -455,29 +587,29 @@ class TextOptimizer {
 
         // 按顺序选择案例
         const currentCase = demoCases[this.currentCaseIndex];
-        
+
         // 更新索引，循环到下一个案例
         this.currentCaseIndex = (this.currentCaseIndex + 1) % demoCases.length;
-        
+
         // 填充到输入框
         const inputTextArea = document.getElementById('inputText');
         if (inputTextArea) {
             inputTextArea.value = currentCase.text;
             this.updateCharCount();
-            
+
             // 添加动画效果
             inputTextArea.style.backgroundColor = '#f0f8ff';
             setTimeout(() => {
                 inputTextArea.style.backgroundColor = '';
             }, 500);
-            
+
             // 高亮推荐功能
             this.highlightRecommendedFunctions(currentCase.functions);
-            
+
             // 显示提示
             const recommendedText = this.getFunctionNames(currentCase.functions)[0]; // 只取第一个功能名称
             // this.showToast(`✨ ${currentCase.type}案例已加载！推荐使用：${recommendedText}`, 'success');
-            
+
             // 滚动到输入框
             inputTextArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
             inputTextArea.focus();
@@ -489,13 +621,13 @@ class TextOptimizer {
         document.querySelectorAll('.function-btn').forEach(btn => {
             btn.classList.remove('recommended');
         });
-        
+
         // 添加推荐功能的高亮
         recommendedFunctions.forEach(funcType => {
             const btn = document.querySelector(`[data-function="${funcType}"]`);
             if (btn) {
                 btn.classList.add('recommended');
-                
+
                 // 3秒后移除高亮
                 setTimeout(() => {
                     btn.classList.remove('recommended');
@@ -515,7 +647,7 @@ class TextOptimizer {
             check: '检查错误',
             custom: '自定义修改'
         };
-        
+
         return functionTypes.map(type => names[type] || type);
     }
 
@@ -523,7 +655,7 @@ class TextOptimizer {
         const charCount = document.querySelector('.char-count');
         const length = inputText.value.length;
         charCount.textContent = `${length} / 2000`;
-        
+
         if (length > 2000) {
             charCount.style.color = '#ff3b30';
         } else if (length > 1800) {
@@ -541,10 +673,10 @@ class TextOptimizer {
 
     handleFunction(functionType) {
         console.log('🎯 Function button clicked:', functionType);
-        
+
         const inputText = document.getElementById('inputText').value.trim();
         console.log('📝 Input text:', inputText);
-        
+
         if (!inputText) {
             console.log('❌ No input text provided');
             this.showToast('请先输入要处理的文本');
@@ -584,7 +716,7 @@ class TextOptimizer {
     handleCustomRequirement() {
         const requirement = document.getElementById('customRequirement').value.trim();
         const inputText = document.getElementById('inputText').value.trim();
-        
+
         if (!requirement) {
             this.showToast('请输入自定义需求');
             return;
@@ -601,26 +733,26 @@ class TextOptimizer {
             this.showToast('❌ 请先输入要处理的文案内容', 'error');
             return;
         }
-        
+
         this.showOutput();
         this.showLoading();
 
         try {
             console.log('🎯 Starting text processing:', { functionType, textLength: text.length, extra });
-            
+
             const result = await this.callAPI(functionType, text, extra);
             console.log('🎉 Processing completed successfully');
-            
+
             this.showToast('✅ AI处理完成！', 'success');
-            
+
         } catch (error) {
             console.error('💥 Processing error:', error);
-            
+
             setTimeout(() => {
                 const errorMessage = error.message.includes('fetch') 
                     ? 'AI服务连接失败，请检查网络连接'
                     : 'AI处理失败：' + error.message;
-                    
+
                 this.displayError(errorMessage);
                 this.hideLoading();
                 this.showToast('❌ AI处理失败，请重试', 'error');
@@ -630,7 +762,7 @@ class TextOptimizer {
 
     async callAPI(functionType, text, extra) {
         console.log('🚀 Calling API:', { functionType, text, extra });
-        
+
         try {
             const requestBody = {
                 text: text,
@@ -641,7 +773,7 @@ class TextOptimizer {
             if (functionType === 'custom' && extra) {
                 requestBody.customPrompt = extra;
             }
-            
+
             // 添加翻译目标语言参数
             if (functionType === 'translate' && extra) {
                 requestBody.targetLanguage = extra;
@@ -667,7 +799,7 @@ class TextOptimizer {
 
             const data = await response.json();
             console.log('✅ API Response:', data);
-            
+
             if (data.success) {
                 console.log('🎉 Processing dual AI results with streaming display');
 
@@ -769,19 +901,19 @@ class TextOptimizer {
     getMockResults(functionType, text, extra) {
         const mockResults = {
             optimize: `【优化后的表达】\n\n${text}\n\n经过语言优化，这段文字在保持原意的基础上，提升了表达的准确性和流畅度。调整了语序，优化了用词，使内容更加易读易懂。`,
-            
+
             expand: `【扩写版本】\n\n${text}\n\n为了让内容更加丰富详实，我们可以从多个维度来深入阐述。首先，从背景角度来看，这个话题具有重要的现实意义。其次，从具体实施层面分析，需要考虑各种因素的影响。此外，我们还应该关注长远的发展趋势和潜在的挑战。通过这样的深入分析，我们可以得出更加全面和有价值的结论。`,
-            
+
             summarize: `【精简版本】\n\n${text.length > 50 ? text.substring(0, 50) + '...' : text}\n\n核心要点：保持原文主要信息，去除冗余表达，突出关键内容。`,
-            
+
             simplify: `【朴实表达】\n\n${text}\n\n这段话用更简单的方式来说就是：用大家都能听懂的话来表达同样的意思，不用复杂的词汇，让每个人都能轻松理解。`,
-            
+
             emotional: `【表达更具体】\n\n${text}\n\n具体化表达：这个项目预计每年为公司节省运营成本约15-20%，相当于节省200-300万元。通过自动化流程，员工工作效率提升35%，原本需要2小时的任务现在只需45分钟完成。实施后，客户满意度从78%提升至92%，投资回报率达到180%。`,
-            
+
             translate: `【翻译结果】\n\n原文：${text}\n\n译文：我们的产品易于使用，功能丰富。用户反馈积极，市场表现良好。`,
-            
+
             check: `【错误检查结果】\n\n原文：${text}\n\n✅ 检查完成！\n\n发现的问题：\n• 建议将某些表达方式进行优化\n• 个别标点符号使用可以更规范\n• 整体语言流畅度良好\n\n修正建议：保持现有表达风格，注意标点符号的准确使用。`,
-            
+
             custom: `【根据您的需求修改】\n\n原文：${text}\n\n您的需求：${extra}\n\n修改后：${text}（已根据"${extra}"的要求进行调整，在保持原意的基础上，按照您的具体需求对表达方式、语气、风格等方面进行了相应的优化和改进。）`
         };
 
@@ -806,10 +938,10 @@ class TextOptimizer {
 
     showOutput() {
         console.log('👁️ Showing output section...');
-        
+
         const outputPlaceholder = document.getElementById('outputPlaceholder');
         const outputContent = document.getElementById('outputContent');
-        
+
         console.log('🔍 Output section elements:', {
             outputPlaceholder: !!outputPlaceholder,
             outputContent: !!outputContent
@@ -818,10 +950,10 @@ class TextOptimizer {
         if (outputPlaceholder && outputContent) {
             outputPlaceholder.style.display = 'none';
             outputContent.style.display = 'flex';
-            
+
             // 重置编辑状态，确保显示新结果时回到正常模式
             this.resetEditState();
-            
+
             console.log('✅ Output section shown');
         } else {
             console.error('❌ Output section elements not found!');
@@ -854,14 +986,14 @@ class TextOptimizer {
         const qwenLoading = document.getElementById('qwenLoading');
         const openaiResult = document.getElementById('openaiResult');
         const qwenResult = document.getElementById('qwenResult');
-        
+
         if (openaiLoading && qwenLoading) {
             openaiLoading.style.display = 'none';
             qwenLoading.style.display = 'none';
             openaiResult.style.display = 'block';
             qwenResult.style.display = 'block';
         }
-        
+
         // 重新启用输出区域的操作按钮
         this.enableOutputButtons();
     }
@@ -949,7 +1081,7 @@ class TextOptimizer {
     setEditButtonState(isEditing) {
         const editBtn = document.getElementById('editBtn');
         if (!editBtn) return;
-        
+
         if (isEditing) {
             // 编辑模式：显示保存/确认图标和文本
             editBtn.innerHTML = `
@@ -982,7 +1114,7 @@ class TextOptimizer {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
-        
+
         // 逐个设置样式属性，避免样式冲突
         toast.style.position = 'fixed';
         toast.style.top = '20px';
@@ -1007,20 +1139,20 @@ class TextOptimizer {
         toast.style.wordWrap = 'break-word';
         toast.style.transform = 'translateX(100%)';
         toast.style.transition = 'transform 0.3s ease';
-        
+
         // 强制清除可能影响高度的属性
         toast.style.margin = '0';
         toast.style.border = 'none';
         toast.style.outline = 'none';
         toast.style.boxSizing = 'border-box';
-        
+
         document.body.appendChild(toast);
-        
+
         // 显示动画
         setTimeout(() => {
             toast.style.transform = 'translateX(0)';
         }, 10);
-        
+
         // 自动隐藏
         setTimeout(() => {
             toast.style.transform = 'translateX(100%)';
@@ -1111,18 +1243,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 检查关键元素是否存在
     const inputText = document.getElementById('inputText');
     const functionBtns = document.querySelectorAll('.function-btn');
-    
+
     console.log('🔍 Element check:', {
         inputText: !!inputText,
         functionButtons: functionBtns.length,
         optimizeButton: !!document.querySelector('[data-function="optimize"]')
     });
-    
+
     if (!inputText) {
         console.error('❌ Input text element not found!');
         return;
     }
-    
+
     if (functionBtns.length === 0) {
         console.error('❌ No function buttons found!');
         return;
@@ -1178,11 +1310,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (files.length > 0) {
             const file = files[0];
-            
+
             // 检查文件类型
             if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
                 const reader = new FileReader();
-                
+
                 reader.onload = function(e) {
                     const text = e.target.result;
                     if (text.length <= 2000) {
@@ -1197,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 };
-                
+
                 reader.readAsText(file, 'UTF-8');
             } else {
                 if (window.textOptimizer) {

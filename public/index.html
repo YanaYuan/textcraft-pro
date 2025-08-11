@@ -157,7 +157,7 @@
                     <div class="placeholder-text">优化结果将在这里显示</div>
                     <div class="placeholder-desc">请先输入文案内容，然后选择相应的优化功能</div>
                 </div>
-                
+
                 <div class="output-content" id="outputContent" style="display: none;">
                     <div class="output-header">
                         <h3 id="outputTitle">优化结果</h3>
@@ -294,12 +294,38 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="suggestion-loading" id="suggestionLoading" style="display: none;">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">AI正在分析文案，生成优化建议...</div>
-                </div>
-                <div class="suggestions-list" id="modalSuggestionsList">
-                    <!-- 建议项目将动态插入这里 -->
+                <div class="dual-suggestions-container">
+                    <!-- OpenAI 建议 -->
+                    <div class="suggestion-panel openai-suggestion-panel">
+                        <div class="suggestion-panel-header">
+                            <h4 class="suggestion-panel-title">OpenAI 建议</h4>
+                        </div>
+                        <div class="suggestion-panel-content">
+                            <div class="suggestion-loading" id="openaiSuggestionLoading" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-text">OpenAI 正在分析...</div>
+                            </div>
+                            <div class="suggestions-list" id="openaiSuggestionsList">
+                                <!-- OpenAI建议项目将动态插入这里 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Qwen 建议 -->
+                    <div class="suggestion-panel qwen-suggestion-panel">
+                        <div class="suggestion-panel-header">
+                            <h4 class="suggestion-panel-title">Qwen 建议</h4>
+                        </div>
+                        <div class="suggestion-panel-content">
+                            <div class="suggestion-loading" id="qwenSuggestionLoading" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-text">Qwen 正在分析...</div>
+                            </div>
+                            <div class="suggestions-list" id="qwenSuggestionsList">
+                                <!-- Qwen建议项目将动态插入这里 -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

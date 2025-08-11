@@ -972,7 +972,7 @@ body {
     body {
         padding: 15px;
     }
-    
+
     .container {
         border-radius: 16px;
     }
@@ -982,21 +982,21 @@ body {
     body {
         padding: 10px;
     }
-    
+
     .container {
         padding: 15px;
         border-radius: 12px;
     }
-    
+
     .main {
         gap: 15px;
     }
-    
+
     .functions-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
-    
+
     .function-btn {
         padding: 10px 12px;
         gap: 6px;
@@ -1008,43 +1008,43 @@ body {
     body {
         padding: 10px;
     }
-    
+
     .container {
         height: calc(100vh - 20px);
         padding: 15px;
     }
-    
+
     .header {
         margin-bottom: 15px;
     }
-    
+
     .logo h1 {
         font-size: 28px;
         letter-spacing: -0.5px;
     }
-    
+
     .logo .version {
         font-size: 9px;
         padding: 2px 4px;
         transform: translateY(-8px);
     }
-    
+
     .subtitle {
         font-size: 14px;
         letter-spacing: -0.1px;
     }
-    
+
     .main {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .functions-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 6px;
         grid-template-rows: repeat(4, 1fr);
     }
-    
+
     .function-btn {
         padding: 8px 10px;
         gap: 6px;
@@ -1052,17 +1052,17 @@ body {
         min-height: 45px;
         max-height: 50px;
     }
-    
+
     .function-icon {
         width: 16px;
         height: 16px;
     }
-    
+
     .function-icon svg {
         width: 14px;
         height: 14px;
     }
-    
+
     .function-title {
         font-size: 11px;
     }
@@ -1072,40 +1072,40 @@ body {
     body {
         padding: 5px;
     }
-    
+
     .container {
         padding: 10px;
         border-radius: 8px;
         height: calc(100vh - 10px);
     }
-    
+
     .header {
         margin-bottom: 10px;
         padding: 5px 0;
     }
-    
+
     .logo h1 {
         font-size: 24px;
         letter-spacing: -0.4px;
     }
-    
+
     .logo .version {
         font-size: 8px;
         padding: 1px 3px;
         transform: translateY(-6px);
     }
-    
+
     .subtitle {
         font-size: 12px;
         padding: 0 10px;
     }
-    
+
     .functions-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 4px;
         grid-template-rows: repeat(5, 1fr);
     }
-    
+
     .function-btn {
         padding: 6px 8px;
         gap: 4px;
@@ -1113,11 +1113,11 @@ body {
         min-height: 40px;
         max-height: 45px;
     }
-    
+
     .function-title {
         font-size: 10px;
     }
-    
+
     .new-badge {
         font-size: 7px;
         padding: 1px 3px;
@@ -1125,13 +1125,13 @@ body {
         top: 2px;
         right: 2px;
     }
-    
+
     .input-container textarea {
         padding: 10px;
         font-size: 13px;
         min-height: 80px;
     }
-    
+
     .input-footer {
         padding: 8px 10px;
     }
@@ -1355,4 +1355,72 @@ body {
 
 .input-container textarea:focus {
     box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.1);
+}
+
+/* 双建议面板样式 */
+.dual-suggestions-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.suggestion-panel {
+    flex: 1;
+    border: 1px solid #e5e5e7;
+    border-radius: 12px;
+    background: white;
+    overflow: hidden;
+}
+
+.suggestion-panel-header {
+    background: #f5f5f7;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.suggestion-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0;
+}
+
+.openai-suggestion-panel .suggestion-panel-header {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+}
+
+.qwen-suggestion-panel .suggestion-panel-header {
+    background: linear-gradient(135deg, #f8f0ff 0%, #f0e6ff 100%);
+}
+
+.suggestion-panel-content {
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.suggestion-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.suggestion-loading .loading-text {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .dual-suggestions-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .suggestion-panel-content {
+        max-height: 300px;
+    }
 }
